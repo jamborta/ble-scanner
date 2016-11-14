@@ -4,31 +4,30 @@ import bluetooth._bluetooth as bluez
 
 
 class BLE(object):
-
 	LE_META_EVENT = 0x3e
-	LE_PUBLIC_ADDRESS=0x00
-	LE_RANDOM_ADDRESS=0x01
-	LE_SET_SCAN_PARAMETERS_CP_SIZE=7
-	OGF_LE_CTL=0x08
-	OCF_LE_SET_SCAN_PARAMETERS=0x000B
-	OCF_LE_SET_SCAN_ENABLE=0x000C
-	OCF_LE_CREATE_CONN=0x000D
+	LE_PUBLIC_ADDRESS = 0x00
+	LE_RANDOM_ADDRESS = 0x01
+	LE_SET_SCAN_PARAMETERS_CP_SIZE = 7
+	OGF_LE_CTL = 0x08
+	OCF_LE_SET_SCAN_PARAMETERS = 0x000B
+	OCF_LE_SET_SCAN_ENABLE = 0x000C
+	OCF_LE_CREATE_CONN = 0x000D
 
 	LE_ROLE_MASTER = 0x00
 	LE_ROLE_SLAVE = 0x01
 
 	# these are actually subevents of LE_META_EVENT
-	EVT_LE_CONN_COMPLETE=0x01
-	EVT_LE_ADVERTISING_REPORT=0x02
-	EVT_LE_CONN_UPDATE_COMPLETE=0x03
-	EVT_LE_READ_REMOTE_USED_FEATURES_COMPLETE=0x04
+	EVT_LE_CONN_COMPLETE = 0x01
+	EVT_LE_ADVERTISING_REPORT = 0x02
+	EVT_LE_CONN_UPDATE_COMPLETE = 0x03
+	EVT_LE_READ_REMOTE_USED_FEATURES_COMPLETE = 0x04
 
 	# Advertisment event types
-	ADV_IND=0x00
-	ADV_DIRECT_IND=0x01
-	ADV_SCAN_IND=0x02
-	ADV_NONCONN_IND=0x03
-	ADV_SCAN_RSP=0x04
+	ADV_IND = 0x00
+	ADV_DIRECT_IND = 0x01
+	ADV_SCAN_IND = 0x02
+	ADV_NONCONN_IND = 0x03
+	ADV_SCAN_RSP = 0x04
 
 	def __init__(self, dev_id=0):
 		self.sock = bluez.hci_open_dev(dev_id)
@@ -83,8 +82,8 @@ class BLE(object):
 								data['temp'] = temp - delta_temp
 								c1 = 17.62
 								c2 = 243.12
-								fact1 = math.exp((temp*c1) / (temp+c2))
-								fact2 = math.exp((data['temp']*c1) / (data['temp']+c2))
+								fact1 = math.exp((temp * c1) / (temp + c2))
+								fact2 = math.exp((data['temp'] * c1) / (data['temp'] + c2))
 								humidity = struct.unpack("B", air_mentor_package[25])[0]
-								data['humidity'] = humidity*(fact1/fact2)
+								data['humidity'] = humidity * (fact1 / fact2)
 							return mac_address, air_mentor_package, data
