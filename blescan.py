@@ -73,15 +73,16 @@ class BLE(object):
 						data = []
 						if mac == mac_address and len(pkt) > 14:
 							air_mentor_package = pkt[13:]
-							data_type = struct.unpack("<B", air_mentor_package[18])[0]
-							if data_type == 17:
+							# low byte of the variable
+							data_type = "%02x" % struct.unpack("<B", air_mentor_package[18])[0]
+							if data_type[1] == '1':
 								co2 = struct.unpack(">H", air_mentor_package[20:22])[0]
 								data.append({"topic": base_topic + "co2", "payload": co2})
 								pm25 = struct.unpack(">H", air_mentor_package[22:24])[0]
 								data.append({"topic": base_topic + "pm25", "payload": pm25})
 								pm10 = struct.unpack(">H", air_mentor_package[24:26])[0]
 								data.append({"topic": base_topic + "pm10", "payload": pm10})
-							elif data_type == 18:
+							elif data_type[1] == '2':
 								tvoc = struct.unpack(">H", air_mentor_package[20:22])[0]
 								data.append({"topic": base_topic + "tvoc", "payload": tvoc})
 
