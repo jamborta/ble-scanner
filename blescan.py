@@ -1,6 +1,8 @@
 import math
 import struct
 import bluetooth._bluetooth as bluez
+import paho.mqtt.publish as publish
+import time
 
 
 class BLE(object):
@@ -50,6 +52,7 @@ class BLE(object):
 		pass
 
 	def parse_events(self, mac="ec:f0:0e:49:34:d8"):
+		base_topic = "openhab/am/"
 		flt = bluez.hci_filter_new()
 		bluez.hci_filter_all_events(flt)
 		bluez.hci_filter_set_ptype(flt, bluez.HCI_EVENT_PKT)
@@ -67,23 +70,37 @@ class BLE(object):
 					for i in range(0, num_reports):
 						mac_address = self.packed_bdaddr_to_string(pkt[3:9])
 						print mac_address
-						data = {}
-						if mac == mac_address:
+						data = []
+						if mac == mac_address and len(pkt) > 14:
 							air_mentor_package = pkt[13:]
 							data_type = struct.unpack("<B", air_mentor_package[18])[0]
-							if data_type == 33:
-								data['co2'] = struct.unpack(">H", air_mentor_package[20:22])[0]
-								data['pm25'] = struct.unpack(">H", air_mentor_package[22:24])[0]
-								data['pm10'] = struct.unpack(">H", air_mentor_package[24:26])[0]
-							elif data_type == 34:
-								data['tvoc'] = struct.unpack(">H", air_mentor_package[20:22])[0]
-								temp = (struct.unpack(">H", air_mentor_package[22:24])[0] - 4000) * 0.01
+							if data_type == 17:
+								co2 = struct.unpack(">H", air_mentor_package[20:22])[0]
+								data.append({"topic": base_topic + "co2", "payload": co2})
+								pm25 = struct.unpack(">H", air_mentor_package[22:24])[0]
+								data.append({"topic": base_topic + "pm25", "payload": pm25})
+								pm10 = struct.unpack(">H", air_mentor_package[24:26])[0]
+								data.append({"topic": base_topic + "pm10", "payload": pm10})
+							elif data_type == 18:
+								tvoc = struct.unpack(">H", air_mentor_package[20:22])[0]
+								data.append({"topic": base_topic + "tvoc", "payload": tvoc})
+
+								rel_temp = (struct.unpack(">H", air_mentor_package[22:24])[0] - 4000) * 0.01
 								delta_temp = (struct.unpack("B", air_mentor_package[24])[0]) * 0.1
-								data['temp'] = temp - delta_temp
+								temp = rel_temp - delta_temp
+								data.append({"topic": base_topic + "temperature", "payload": temp})
+
 								c1 = 17.62
 								c2 = 243.12
-								fact1 = math.exp((temp * c1) / (temp + c2))
-								fact2 = math.exp((data['temp'] * c1) / (data['temp'] + c2))
+								fact1 = math.exp((rel_temp * c1) / (rel_temp + c2))
+								fact2 = math.exp((temp * c1) / (temp + c2))
 								humidity = struct.unpack("B", air_mentor_package[25])[0]
-								data['humidity'] = humidity * (fact1 / fact2)
-							return mac_address, air_mentor_package, data
+								rel_humidity = humidity * (fact1 / fact2)
+								data.append({"topic": base_topic + "humidity", "payload": rel_humidity})
+
+							publish.multiple(data, hostname="localhost", port=1883, keepalive=60, will=None, auth=None, tls=None)
+							time.sleep(60)
+
+if __name__ == '__main__':
+	b = BLE()
+	b.parse_events()
