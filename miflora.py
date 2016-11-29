@@ -14,9 +14,10 @@ from gattlib import DiscoveryService, GATTRequester, GATTResponse
 verbose = True
 
 service = DiscoveryService("hci0")
+# if asking for root, try restarting service (hciconfig hci0 down, hciconfig hci0 up)
 devices = service.discover(15)
 
-baseTopic = "/miflower/"
+baseTopic = "openhab/miflower/"
 msgs = []
 
 for address, name in list(devices.items()):
