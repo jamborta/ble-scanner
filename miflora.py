@@ -10,7 +10,7 @@ verbose = True
 # to make this work downgrade the firmware (rpi2) sudo rpi-update 33a6707cf1c96b8a2b5dac2ac9dead590db9fcaa
 # devices = service.discover(15)
 
-a = ["C4:7C:8D:61:95:E9", "C4:7C:8D:61:99:B3", "C4:7C:8D:61:92:49"]
+a = ["C4:7C:8D:61:99:B3", "C4:7C:8D:61:92:49", "C4:7C:8D:61:95:E9"]
 
 baseTopic = "openhab/miflower/"
 msgs = []
