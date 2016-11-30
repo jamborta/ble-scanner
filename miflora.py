@@ -28,12 +28,12 @@ for address in a:
 		requester.write_by_handle(0x0033, str(bytearray([0xa0, 0x1f])))
 		# Read plant data
 		data = requester.read_by_handle(0x0035)[0]
-		requester.disconnect()
 		temperature, sunlight, moisture, fertility = unpack('<hxIBHxxxxxx', data)
 		msgs.append({'topic': topic + 'temperature', 'payload': temperature / 10.})
 		msgs.append({'topic': topic + 'sunlight', 'payload': sunlight})
 		msgs.append({'topic': topic + 'moisture', 'payload': moisture})
 		msgs.append({'topic': topic + 'fertility', 'payload': fertility})
+		requester.disconnect()
 		if (verbose):
 			print("name: {}, address: {}".format("Flower care", address))
 			print "Battery level:", battery, "%"
