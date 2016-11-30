@@ -4,6 +4,7 @@ import bluetooth._bluetooth as bluez
 import paho.mqtt.publish as publish
 import time
 
+# start bluetooth service: hciconfig hci0 up
 
 class BLE(object):
 	LE_META_EVENT = 0x3e
