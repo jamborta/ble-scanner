@@ -23,7 +23,7 @@ msgs = []
 
 for address, name in list(devices.items()):
 	try:
-		if (name == "Flower mate"):
+		if (name == "Flower care"):
 			topic = baseTopic + address.replace(':', '') + '/'
 			requester = GATTRequester(address, True)
 			# Read battery and firmware version attribute
