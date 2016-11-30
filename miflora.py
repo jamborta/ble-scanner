@@ -43,7 +43,7 @@ for address in a:
 		msgs.append({'topic': topic + 'moisture', 'payload': moisture})
 		msgs.append({'topic': topic + 'fertility', 'payload': fertility})
 		if (verbose):
-			print("name: {}, address: {}".format(name, address))
+			print("name: {}, address: {}".format("Flower care", address))
 			print "Battery level:", battery, "%"
 			print "Firmware version:", firmware
 			print "Light intensity:", sunlight, "lux"
