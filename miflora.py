@@ -23,7 +23,7 @@ a = ["C4:7C:8D:61:95:E9", "C4:7C:8D:61:99:B3", "C4:7C:8D:61:92:49"]
 baseTopic = "openhab/miflower/"
 msgs = []
 
-for address, name in a:
+for address in a:
 	try:
 		topic = baseTopic + address.replace(':', '') + '/'
 		requester = GATTRequester(address, True)
