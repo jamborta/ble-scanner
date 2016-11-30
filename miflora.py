@@ -15,6 +15,7 @@ verbose = True
 
 service = DiscoveryService("hci0")
 # if asking for root, try restarting service (hciconfig hci0 down, hciconfig hci0 up)
+# to make this work downgrade the firmware (rpi2) sudo rpi-update 33a6707cf1c96b8a2b5dac2ac9dead590db9fcaa
 devices = service.discover(15)
 
 baseTopic = "openhab/miflower/"
@@ -34,6 +35,7 @@ for address, name in list(devices.items()):
 			requester.write_by_handle(0x0033, str(bytearray([0xa0, 0x1f])))
 			# Read plant data
 			data = requester.read_by_handle(0x0035)[0]
+			requester.disconnect()
 			temperature, sunlight, moisture, fertility = unpack('<hxIBHxxxxxx', data)
 			msgs.append({'topic': topic + 'temperature', 'payload': temperature / 10.})
 			msgs.append({'topic': topic + 'sunlight', 'payload': sunlight})
@@ -48,7 +50,7 @@ for address, name in list(devices.items()):
 				print "Soil moisture:", moisture, "%"
 				print "Soil fertility:", fertility, "uS/cm"
 	except:
-		print "Error during reafing:", sys.exc_info()[0]
+		print "Error during reading:", sys.exc_info()[0]
 
 if (len(msgs) > 0):
 	publish.multiple(msgs, hostname="localhost", port=1883, client_id="miflower", keepalive=60, will=None, auth=None,
