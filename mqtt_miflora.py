@@ -21,15 +21,16 @@ for plant in plants:
 
 	try:
 		print("Getting data from Mi Flora")
+		print("MAC address: {}".format(plant._mac))
 		print("FW: {}".format(plant.firmware_version()))
 		print("Name: {}".format(plant.name()))
-		print("Temperature: {}".format(plant.parameter_value(MI_TEMPERATURE)))
+		print("Temperature: {} C".format(plant.parameter_value(MI_TEMPERATURE)))
 		print("Moisture: {}".format(plant.parameter_value(MI_MOISTURE)))
-		print("Light: {}".format(plant.parameter_value(MI_LIGHT)))
-		print("Conductivity: {}".format(plant.parameter_value(MI_CONDUCTIVITY)))
-		print("Battery: {}".format(plant.parameter_value(MI_BATTERY)))
+		print("Light: {} lux".format(plant.parameter_value(MI_LIGHT)))
+		print("Conductivity: {} uS/cm".format(plant.parameter_value(MI_CONDUCTIVITY)))
+		print("Battery: {} %".format(plant.parameter_value(MI_BATTERY)))
 
-		topic = baseTopic + plant.firmware_version() + '/'
+		topic = baseTopic + plant._mac + '/'
 		# Read battery and firmware version attribute
 		msgs.append({'topic': topic + 'battery', 'payload': plant.parameter_value(MI_BATTERY)})
 		msgs.append({'topic': topic + 'firmware', 'payload': plant.firmware_version()})
