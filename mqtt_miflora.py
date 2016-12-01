@@ -9,7 +9,7 @@ import time
 
 plant1 = MiFloraPoller("C4:7C:8D:61:95:E9")
 plant2 = MiFloraPoller("C4:7C:8D:61:92:49")
-plant3 = MiFloraPoller("C4:7C:8D:61:95:E9")
+plant3 = MiFloraPoller("C4:7C:8D:61:99:B3")
 
 plants = [plant1, plant2, plant3]
 
