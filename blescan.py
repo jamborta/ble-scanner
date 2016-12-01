@@ -76,7 +76,6 @@ class BLE(object):
 							air_mentor_package = pkt[13:]
 							# low byte of the variable
 							data_type = "%02x" % struct.unpack("<B", air_mentor_package[18])[0]
-							print data_type
 							if data_type[1] == '1':
 								co2 = struct.unpack(">H", air_mentor_package[20:22])[0]
 								data.append({"topic": base_topic + "co2", "payload": co2})
