@@ -5,12 +5,17 @@ from gattlib import DiscoveryService, GATTRequester, GATTResponse
 
 verbose = True
 
-# service = DiscoveryService("hci0")
-# if asking for root, try restarting service (hciconfig hci0 down, hciconfig hci0 up)
-# to make this work downgrade the firmware (rpi2) sudo rpi-update 33a6707cf1c96b8a2b5dac2ac9dead590db9fcaa
-# devices = service.discover(15)
 
-a = ["C4:7C:8D:61:99:B3", "C4:7C:8D:61:92:49", "C4:7C:8D:61:95:E9"]
+# install milora from git clone https://github.com/open-homeautomation/miflora
+# install python 3.5 from source (http://stackoverflow.com/questions/37079195/how-do-you-update-to-the-latest-python-3-5-1-version-on-a-raspberry-pi)
+# sudo python3.5 setup.py install
+
+
+from miflora.miflora_poller import MiFloraPoller, MI_CONDUCTIVITY, MI_MOISTURE, MI_LIGHT, MI_TEMPERATURE, MI_BATTERY
+
+plant1 = MiFloraPoller("C4:7C:8D:61:95:E9")
+plant2 = MiFloraPoller("C4:7C:8D:61:92:49")
+plant3 = MiFloraPoller("C4:7C:8D:61:95:E9")
 
 baseTopic = "openhab/miflower/"
 msgs = []

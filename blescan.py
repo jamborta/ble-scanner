@@ -32,10 +32,6 @@ class BLE(object):
 	ADV_NONCONN_IND = 0x03
 	ADV_SCAN_RSP = 0x04
 
-	def __init__(self, dev_id=0):
-		self.sock = bluez.hci_open_dev(dev_id)
-		self.hci_enable_le_scan()
-
 	def packed_bdaddr_to_string(self, bdaddr_packed):
 		return ':'.join('%02x' % i for i in struct.unpack("<BBBBBB", bdaddr_packed[::-1]))
 
@@ -55,11 +51,13 @@ class BLE(object):
 	def parse_events(self, mac="ec:f0:0e:49:34:d8"):
 		base_topic = "openhab/am/"
 		while True:
+			sock = bluez.hci_open_dev(0)
 			flt = bluez.hci_filter_new()
 			bluez.hci_filter_all_events(flt)
 			bluez.hci_filter_set_ptype(flt, bluez.HCI_EVENT_PKT)
-			self.sock.setsockopt(bluez.SOL_HCI, bluez.HCI_FILTER, flt)
-			pkt = self.sock.recv(255)
+			sock.setsockopt(bluez.SOL_HCI, bluez.HCI_FILTER, flt)
+			pkt = sock.recv(255)
+			sock.close()
 			ptype, event, plen = struct.unpack("BBB", pkt[:3])
 			if event == self.LE_META_EVENT:
 				subevent, = struct.unpack("B", pkt[3])
