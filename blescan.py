@@ -54,11 +54,11 @@ class BLE(object):
 
 	def parse_events(self, mac="ec:f0:0e:49:34:d8"):
 		base_topic = "openhab/am/"
-		flt = bluez.hci_filter_new()
-		bluez.hci_filter_all_events(flt)
-		bluez.hci_filter_set_ptype(flt, bluez.HCI_EVENT_PKT)
-		self.sock.setsockopt(bluez.SOL_HCI, bluez.HCI_FILTER, flt)
 		while True:
+			flt = bluez.hci_filter_new()
+			bluez.hci_filter_all_events(flt)
+			bluez.hci_filter_set_ptype(flt, bluez.HCI_EVENT_PKT)
+			self.sock.setsockopt(bluez.SOL_HCI, bluez.HCI_FILTER, flt)
 			pkt = self.sock.recv(255)
 			ptype, event, plen = struct.unpack("BBB", pkt[:3])
 			if event == self.LE_META_EVENT:
