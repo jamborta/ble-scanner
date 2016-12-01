@@ -32,7 +32,7 @@ while True:
 			print("Conductivity: {} uS/cm".format(plant.parameter_value(MI_CONDUCTIVITY)))
 			print("Battery: {} %".format(plant.parameter_value(MI_BATTERY)))
 
-			topic = baseTopic + plant._mac + '/'
+			topic = baseTopic + plant._mac.replace(":", "") + '/'
 			# Read battery and firmware version attribute
 			msgs.append({'topic': topic + 'battery', 'payload': plant.parameter_value(MI_BATTERY)})
 			msgs.append({'topic': topic + 'firmware', 'payload': plant.firmware_version()})
@@ -43,6 +43,7 @@ while True:
 		except:
 			print("Error during reading:", sys.exc_info()[0])
 
+		print(msgs)
 		if len(msgs) > 0:
 			publish.multiple(msgs, hostname="localhost", port=1883, keepalive=60, will=None, auth=None, tls=None)
 
