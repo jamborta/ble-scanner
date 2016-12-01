@@ -100,7 +100,7 @@ class BLE(object):
 
 							print data
 							publish.multiple(data, hostname="localhost", port=1883, keepalive=60, will=None, auth=None, tls=None)
-							time.sleep(65)
+							time.sleep(61)
 
 if __name__ == '__main__':
 	b = BLE()
