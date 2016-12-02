@@ -35,15 +35,15 @@ class BLE(object):
 	def packed_bdaddr_to_string(self, bdaddr_packed):
 		return ':'.join('%02x' % i for i in struct.unpack("<BBBBBB", bdaddr_packed[::-1]))
 
-	def hci_enable_le_scan(self):
-		self.hci_toggle_le_scan(0x01)
+	def hci_enable_le_scan(self, sock):
+		self.hci_toggle_le_scan(sock, 0x01)
 
-	def hci_disable_le_scan(self):
-		self.hci_toggle_le_scan(0x00)
+	def hci_disable_le_scan(self, sock):
+		self.hci_toggle_le_scan(sock, 0x00)
 
-	def hci_toggle_le_scan(self, enable):
+	def hci_toggle_le_scan(self, sock, enable):
 		cmd_pkt = struct.pack("<BB", enable, 0x00)
-		bluez.hci_send_cmd(self.sock, self.OGF_LE_CTL, self.OCF_LE_SET_SCAN_ENABLE, cmd_pkt)
+		bluez.hci_send_cmd(sock, self.OGF_LE_CTL, self.OCF_LE_SET_SCAN_ENABLE, cmd_pkt)
 
 	def le_handle_connection_complete(self, pkt):
 		pass
@@ -52,7 +52,7 @@ class BLE(object):
 		base_topic = "openhab/am/"
 		while True:
 			sock = bluez.hci_open_dev(0)
-			self.hci_enable_le_scan()
+			self.hci_enable_le_scan(sock)
 			flt = bluez.hci_filter_new()
 			bluez.hci_filter_all_events(flt)
 			bluez.hci_filter_set_ptype(flt, bluez.HCI_EVENT_PKT)
