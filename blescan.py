@@ -5,6 +5,7 @@ import paho.mqtt.publish as publish
 import time
 
 # start bluetooth service: hciconfig hci0 up
+# if this breaks try `scanner = btle.Scanner(arg.hci).withDelegate(ScanPrint(arg))` from bluepy
 
 class BLE(object):
 	LE_META_EVENT = 0x3e
@@ -58,6 +59,7 @@ class BLE(object):
 			bluez.hci_filter_set_ptype(flt, bluez.HCI_EVENT_PKT)
 			sock.setsockopt(bluez.SOL_HCI, bluez.HCI_FILTER, flt)
 			pkt = sock.recv(255)
+			self.hci_disable_le_scan(sock)
 			sock.close()
 			ptype, event, plen = struct.unpack("BBB", pkt[:3])
 			if event == self.LE_META_EVENT:
