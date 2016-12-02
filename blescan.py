@@ -52,6 +52,7 @@ class BLE(object):
 		base_topic = "openhab/am/"
 		while True:
 			sock = bluez.hci_open_dev(0)
+			self.hci_enable_le_scan()
 			flt = bluez.hci_filter_new()
 			bluez.hci_filter_all_events(flt)
 			bluez.hci_filter_set_ptype(flt, bluez.HCI_EVENT_PKT)
