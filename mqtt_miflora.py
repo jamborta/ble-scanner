@@ -7,9 +7,9 @@ import time
 # install python 3.5 from source (http://stackoverflow.com/questions/37079195/how-do-you-update-to-the-latest-python-3-5-1-version-on-a-raspberry-pi)
 # sudo python3.5 setup.py install
 
-plant1 = MiFloraPoller("C4:7C:8D:61:95:E9")
-plant2 = MiFloraPoller("C4:7C:8D:61:92:49")
-plant3 = MiFloraPoller("C4:7C:8D:61:99:B3")
+plant1 = MiFloraPoller("C4:7C:8D:61:95:E9", cache_timeout=900)
+plant2 = MiFloraPoller("C4:7C:8D:61:92:49", cache_timeout=900)
+plant3 = MiFloraPoller("C4:7C:8D:61:99:B3", cache_timeout=900)
 
 plants = [plant1, plant2, plant3]
 
@@ -31,15 +31,15 @@ while True:
 			print("Light: {} lux".format(plant.parameter_value(MI_LIGHT)))
 			print("Conductivity: {} uS/cm".format(plant.parameter_value(MI_CONDUCTIVITY)))
 			print("Battery: {} %".format(plant.parameter_value(MI_BATTERY)))
-
-			topic = baseTopic + plant._mac.replace(":", "") + '/'
-			# Read battery and firmware version attribute
-			msgs.append({'topic': topic + 'battery', 'payload': plant.parameter_value(MI_BATTERY)})
-			msgs.append({'topic': topic + 'firmware', 'payload': plant.firmware_version()})
-			msgs.append({'topic': topic + 'temperature', 'payload': plant.parameter_value(MI_TEMPERATURE)})
-			msgs.append({'topic': topic + 'light', 'payload': plant.parameter_value(MI_LIGHT)})
-			msgs.append({'topic': topic + 'moisture', 'payload': plant.parameter_value(MI_MOISTURE)})
-			msgs.append({'topic': topic + 'fertility', 'payload': plant.parameter_value(MI_CONDUCTIVITY)})
+			if plant.parameter_value(MI_MOISTURE) <= 100:
+				topic = baseTopic + plant._mac.replace(":", "") + '/'
+				# Read battery and firmware version attribute
+				msgs.append({'topic': topic + 'battery', 'payload': plant.parameter_value(MI_BATTERY)})
+				msgs.append({'topic': topic + 'firmware', 'payload': plant.firmware_version()})
+				msgs.append({'topic': topic + 'temperature', 'payload': plant.parameter_value(MI_TEMPERATURE)})
+				msgs.append({'topic': topic + 'light', 'payload': plant.parameter_value(MI_LIGHT)})
+				msgs.append({'topic': topic + 'moisture', 'payload': plant.parameter_value(MI_MOISTURE)})
+				msgs.append({'topic': topic + 'fertility', 'payload': plant.parameter_value(MI_CONDUCTIVITY)})
 		except:
 			print("Error during reading:", sys.exc_info()[0])
 
