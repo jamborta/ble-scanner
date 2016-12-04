@@ -47,4 +47,4 @@ while True:
 		if len(msgs) > 0:
 			publish.multiple(msgs, hostname="localhost", port=1883, keepalive=60, will=None, auth=None, tls=None)
 
-	time.sleep(600)
+	time.sleep(900)
