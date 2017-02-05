@@ -12,7 +12,7 @@ plant2 = MiFloraPoller("C4:7C:8D:61:92:49", cache_timeout=900)
 plant3 = MiFloraPoller("C4:7C:8D:61:99:B3", cache_timeout=900)
 plant4 = MiFloraPoller("C4:7C:8D:62:A3:55", cache_timeout=900)
 
-plants = [plant1, plant2, plant3]
+plants = [plant1, plant2, plant3, plant4]
 
 
 baseTopic = "openhab/miflower/"
@@ -48,4 +48,4 @@ while True:
 		if len(msgs) > 0:
 			publish.multiple(msgs, hostname="localhost", port=1883, keepalive=60, will=None, auth=None, tls=None)
 
-	time.sleep(900)
+	time.sleep(60)
