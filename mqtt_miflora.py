@@ -14,8 +14,9 @@ plant4 = MiFloraPoller("C4:7C:8D:62:A3:55", cache_timeout=900)
 plant5 = MiFloraPoller("C4:7C:8D:62:A2:D0", cache_timeout=900)
 plant6 = MiFloraPoller("C4:7C:8D:62:99:7E", cache_timeout=900)
 plant7 = MiFloraPoller("C4:7C:8D:62:A0:C5", cache_timeout=900)
+plant8 = MiFloraPoller("C4:7C:8D:62:9A:B4", cache_timeout=900)
 
-plants = [plant1, plant2, plant3, plant4, plant5, plant6, plant7]
+plants = [plant1, plant2, plant3, plant4, plant5, plant6, plant7, plant8]
 
 
 baseTopic = "openhab/miflower/"
