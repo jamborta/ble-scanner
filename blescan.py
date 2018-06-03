@@ -52,7 +52,6 @@ class BLE(object):
 	def parse_events(self, mac="ec:f0:0e:49:34:d8"):
 		base_topic = "openhab/am/"
 		while True:	
-			time.sleep(10)
 			sock = bluez.hci_open_dev(0)
 			self.hci_enable_le_scan(sock)
 			flt = bluez.hci_filter_new()
