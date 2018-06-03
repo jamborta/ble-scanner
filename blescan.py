@@ -34,7 +34,7 @@ class BLE(object):
 	ADV_SCAN_RSP = 0x04
 
 	def packed_bdaddr_to_string(self, bdaddr_packed):
-		return ':'.join('%02x' % i for i in struct.unpack("<BBBBBB", bytes([bdaddr_packed[::-1]])))
+		return ':'.join('%02x' % i for i in struct.unpack("<BBBBBB", bdaddr_packed[::-1]))
 
 	def hci_enable_le_scan(self, sock):
 		self.hci_toggle_le_scan(sock, 0x01)
@@ -61,7 +61,7 @@ class BLE(object):
 			pkt = sock.recv(255)
 			self.hci_disable_le_scan(sock)
 			sock.close()
-			ptype, event, plen = struct.unpack("BBB", bytes([pkt[:3]]))
+			ptype, event, plen = struct.unpack("BBB", pkt[:3])
 			if event == self.LE_META_EVENT:
 				subevent, = struct.unpack("B", bytes([pkt[3]]))
 				pkt = pkt[4:]
@@ -74,21 +74,21 @@ class BLE(object):
 						print(mac_address)
 						data = []
 						if mac == mac_address and len(pkt) > 14:
-							air_mentor_package = pkt[13:]
+							air_mentor_package = bytes(pkt[13:])
 							# low byte of the variable
 							data_type = "%02x" % struct.unpack("<B", bytes([air_mentor_package[18]]))[0]
 							if data_type[1] == '1':
-								co2 = struct.unpack(">H", bytes([air_mentor_package[20:22]]))[0]
+								co2 = struct.unpack(">H", air_mentor_package[20:22])[0]
 								data.append({"topic": base_topic + "co2", "payload": co2})
-								pm25 = struct.unpack(">H", bytes([air_mentor_package[22:24]]))[0]
+								pm25 = struct.unpack(">H", air_mentor_package[22:24])[0]
 								data.append({"topic": base_topic + "pm25", "payload": pm25})
-								pm10 = struct.unpack(">H", bytes([air_mentor_package[24:26]]))[0]
+								pm10 = struct.unpack(">H", air_mentor_package[24:26])[0]
 								data.append({"topic": base_topic + "pm10", "payload": pm10})
 							elif data_type[1] == '2':
-								tvoc = struct.unpack(">H", bytes([air_mentor_package[20:22]]))[0]
+								tvoc = struct.unpack(">H", air_mentor_package[20:22])[0]
 								data.append({"topic": base_topic + "tvoc", "payload": tvoc})
 
-								rel_temp = (struct.unpack(">H", bytes([air_mentor_package[22:24]]))[0] - 4000) * 0.01
+								rel_temp = (struct.unpack(">H", air_mentor_package[22:24])[0] - 4000) * 0.01
 								delta_temp = (struct.unpack("B", bytes([air_mentor_package[24]]))[0]) * 0.1
 								temp = rel_temp - delta_temp
 								data.append({"topic": base_topic + "temperature", "payload": temp})
