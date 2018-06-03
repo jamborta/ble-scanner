@@ -34,7 +34,7 @@ class BLE(object):
 	ADV_SCAN_RSP = 0x04
 
 	def packed_bdaddr_to_string(self, bdaddr_packed):
-		return ':'.join('%02x' % i for i in struct.unpack("<BBBBBB", bdaddr_packed[::-1]))
+		return ':'.join('%02x' % i for i in struct.unpack("<BBBBBB", bytes([bdaddr_packed[::-1]])))
 
 	def hci_enable_le_scan(self, sock):
 		self.hci_toggle_le_scan(sock, 0x01)
@@ -61,35 +61,35 @@ class BLE(object):
 			pkt = sock.recv(255)
 			self.hci_disable_le_scan(sock)
 			sock.close()
-			ptype, event, plen = struct.unpack("BBB", pkt[:3])
+			ptype, event, plen = struct.unpack("BBB", bytes([pkt[:3]]))
 			if event == self.LE_META_EVENT:
-				subevent, = struct.unpack("B", pkt[3])
+				subevent, = struct.unpack("B", bytes([pkt[3]]))
 				pkt = pkt[4:]
 				if subevent == self.EVT_LE_CONN_COMPLETE:
 					self.le_handle_connection_complete(pkt)
 				elif subevent == self.EVT_LE_ADVERTISING_REPORT:
-					num_reports = struct.unpack("B", pkt[0])[0]
+					num_reports = struct.unpack("B", bytes([pkt[0]]))[0]
 					for i in range(0, num_reports):
 						mac_address = self.packed_bdaddr_to_string(pkt[3:9])
-						print mac_address
+						print(mac_address)
 						data = []
 						if mac == mac_address and len(pkt) > 14:
 							air_mentor_package = pkt[13:]
 							# low byte of the variable
-							data_type = "%02x" % struct.unpack("<B", air_mentor_package[18])[0]
+							data_type = "%02x" % struct.unpack("<B", bytes([air_mentor_package[18]]))[0]
 							if data_type[1] == '1':
-								co2 = struct.unpack(">H", air_mentor_package[20:22])[0]
+								co2 = struct.unpack(">H", bytes([air_mentor_package[20:22]]))[0]
 								data.append({"topic": base_topic + "co2", "payload": co2})
-								pm25 = struct.unpack(">H", air_mentor_package[22:24])[0]
+								pm25 = struct.unpack(">H", bytes([air_mentor_package[22:24]]))[0]
 								data.append({"topic": base_topic + "pm25", "payload": pm25})
-								pm10 = struct.unpack(">H", air_mentor_package[24:26])[0]
+								pm10 = struct.unpack(">H", bytes([air_mentor_package[24:26]]))[0]
 								data.append({"topic": base_topic + "pm10", "payload": pm10})
 							elif data_type[1] == '2':
-								tvoc = struct.unpack(">H", air_mentor_package[20:22])[0]
+								tvoc = struct.unpack(">H", bytes([air_mentor_package[20:22]]))[0]
 								data.append({"topic": base_topic + "tvoc", "payload": tvoc})
 
-								rel_temp = (struct.unpack(">H", air_mentor_package[22:24])[0] - 4000) * 0.01
-								delta_temp = (struct.unpack("B", air_mentor_package[24])[0]) * 0.1
+								rel_temp = (struct.unpack(">H", bytes([air_mentor_package[22:24]]))[0] - 4000) * 0.01
+								delta_temp = (struct.unpack("B", bytes([air_mentor_package[24]]))[0]) * 0.1
 								temp = rel_temp - delta_temp
 								data.append({"topic": base_topic + "temperature", "payload": temp})
 
@@ -97,13 +97,13 @@ class BLE(object):
 								c2 = 243.12
 								fact1 = math.exp((rel_temp * c1) / (rel_temp + c2))
 								fact2 = math.exp((temp * c1) / (temp + c2))
-								humidity = struct.unpack("B", air_mentor_package[25])[0]
+								humidity = struct.unpack("B", bytes([air_mentor_package[25]]))[0]
 								rel_humidity = humidity * (fact1 / fact2)
 								data.append({"topic": base_topic + "humidity", "payload": rel_humidity})
 
-							print data
+							print(data)
 							publish.multiple(data, hostname="localhost", port=1883, keepalive=60, will=None, auth=None, tls=None)
-							time.sleep(63)
+							time.sleep(120)
 
 if __name__ == '__main__':
 	b = BLE()
