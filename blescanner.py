@@ -63,7 +63,9 @@ if __name__ == '__main__':
 
 	while(True):
 		devices = scanner.scan(10.0)
-		time.sleep(120)
+		sleep_s = 30
+		print("Sleeping for %s seconds" % sleep_s)
+		time.sleep(sleep_s)
 
 
 
