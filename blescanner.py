@@ -4,9 +4,9 @@ import math
 import paho.mqtt.publish as publish
 import time
 
-
 class ScanDelegate(DefaultDelegate):
-	def __init__(self):
+	def __init__(self, mac):
+		self.mac = mac
 		DefaultDelegate.__init__(self)
 
 	@staticmethod
@@ -45,19 +45,21 @@ class ScanDelegate(DefaultDelegate):
 			print("Discovered device", dev.addr)
 		elif isNewData:
 			print("Received new data from", dev.addr)
-			raw_data = dev.rawData[3:]
-			data_type = "%02x" % struct.unpack("<B", bytes([raw_data[18]]))[0]
-			if data_type[1] == '1':
-				data = self.parse_data_type1(raw_data, "openhab/am/")
-			elif data_type[1] == '2':
-				data = self.parse_data_type2(raw_data, "openhab/am/")
-			else:
-				data = []
-			print(data)
-			publish.multiple(data, hostname="localhost", port=1883, keepalive=60, will=None, auth=None, tls=None)
+			if dev.addr == self.mac:
+				raw_data = dev.rawData[3:]
+				data_type = "%02x" % struct.unpack("<B", bytes([raw_data[18]]))[0]
+				if data_type[1] == '1':
+					data = self.parse_data_type1(raw_data, "openhab/am/")
+				elif data_type[1] == '2':
+					data = self.parse_data_type2(raw_data, "openhab/am/")
+				else:
+					data = []
+				print(data)
+				publish.multiple(data, hostname="localhost", port=1883, keepalive=60, will=None, auth=None, tls=None)
 
-class BLEScanner(object):
-	scanner = Scanner().withDelegate(ScanDelegate())
+
+if __name__ == '__main__':
+	scanner = Scanner().withDelegate(ScanDelegate(mac="ec:f0:0e:49:34:d8"))
 
 	while(True):
 		devices = scanner.scan(10.0)
