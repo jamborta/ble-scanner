@@ -11,7 +11,7 @@ def parse_data_type1(data_type1, base_topic):
 	pm25 = struct.unpack(">H", data_type1[22:24])[0]
 	data.append({"topic": base_topic + "pm25", "payload": pm25})
 	pm10 = struct.unpack(">H", data_type1[24:26])[0]
-	data.append({"topic": data_type1 + "pm10", "payload": pm10})
+	data.append({"topic": base_topic + "pm10", "payload": pm10})
 	return data
 
 def parse_data_type2(data_type2, base_topic):
