@@ -69,7 +69,7 @@ if __name__ == '__main__':
 
 		miflora_scanner.scan()
 
-		sleep_s = 120
+		sleep_s = 600
 		print("Sleeping for %s seconds" % sleep_s)
 		time.sleep(sleep_s)
 
