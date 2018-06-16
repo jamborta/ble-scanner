@@ -2,6 +2,7 @@ from bluepy.btle import Scanner, DefaultDelegate, ScanEntry
 import struct
 import math
 import paho.mqtt.publish as publish
+from mqtt_miflora import MiFlora
 import time
 
 def parse_data_type1(data_type1, base_topic):
@@ -47,6 +48,8 @@ class ScanDelegate(DefaultDelegate):
 if __name__ == '__main__':
 	scanner = Scanner().withDelegate(ScanDelegate())
 
+	miflora_scanner = MiFlora()
+
 	while(True):
 		mac = "ec:f0:0e:49:34:d8"
 		devices = scanner.scan(10.0)
@@ -63,6 +66,8 @@ if __name__ == '__main__':
 				data = []
 			print(data)
 			publish.multiple(data, hostname="localhost", port=1883, keepalive=60, will=None, auth=None, tls=None)
+
+		miflora_scanner.scan()
 
 		sleep_s = 120
 		print("Sleeping for %s seconds" % sleep_s)

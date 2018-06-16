@@ -8,49 +8,47 @@ import time
 # install python 3.5 from source (http://stackoverflow.com/questions/37079195/how-do-you-update-to-the-latest-python-3-5-1-version-on-a-raspberry-pi)
 # sudo python3.5 setup.py install
 
-plant1 = MiFloraPoller("C4:7C:8D:61:95:E9", BluepyBackend, cache_timeout=900)
-plant2 = MiFloraPoller("C4:7C:8D:61:92:49", BluepyBackend, cache_timeout=900)
-plant3 = MiFloraPoller("C4:7C:8D:61:99:B3", BluepyBackend, cache_timeout=900)
-plant4 = MiFloraPoller("C4:7C:8D:62:A3:55", BluepyBackend, cache_timeout=900)
-plant5 = MiFloraPoller("C4:7C:8D:62:A2:D0", BluepyBackend, cache_timeout=900)
-plant6 = MiFloraPoller("C4:7C:8D:62:99:7E", BluepyBackend, cache_timeout=900)
-plant7 = MiFloraPoller("C4:7C:8D:62:A0:C5", BluepyBackend, cache_timeout=900)
-plant8 = MiFloraPoller("C4:7C:8D:62:9A:B4", BluepyBackend, cache_timeout=900)
+class MiFlora(object):
 
-plants = [plant1, plant2, plant3, plant4, plant5, plant6, plant7, plant8]
+	baseTopic = "openhab/miflower/"
 
+	def __init__(self):
+		plant1 = MiFloraPoller("C4:7C:8D:61:95:E9", BluepyBackend, cache_timeout=900)
+		plant2 = MiFloraPoller("C4:7C:8D:61:92:49", BluepyBackend, cache_timeout=900)
+		plant3 = MiFloraPoller("C4:7C:8D:61:99:B3", BluepyBackend, cache_timeout=900)
+		plant4 = MiFloraPoller("C4:7C:8D:62:A3:55", BluepyBackend, cache_timeout=900)
+		plant5 = MiFloraPoller("C4:7C:8D:62:A2:D0", BluepyBackend, cache_timeout=900)
+		plant6 = MiFloraPoller("C4:7C:8D:62:99:7E", BluepyBackend, cache_timeout=900)
+		plant7 = MiFloraPoller("C4:7C:8D:62:A0:C5", BluepyBackend, cache_timeout=900)
+		plant8 = MiFloraPoller("C4:7C:8D:62:9A:B4", BluepyBackend, cache_timeout=900)
+		self.plants = [plant1, plant2, plant3, plant4, plant5, plant6, plant7, plant8]
 
-baseTopic = "openhab/miflower/"
-msgs = []
+	def scan(self):
+		msgs = []
 
-while True:
+		for plant in self.plants:
+			try:
+				print("Getting data from Mi Flora")
+				print("MAC address: {}".format(plant._mac))
+				print("FW: {}".format(plant.firmware_version()))
+				print("Name: {}".format(plant.name()))
+				print("Temperature: {} C".format(plant.parameter_value(MI_TEMPERATURE)))
+				print("Moisture: {}".format(plant.parameter_value(MI_MOISTURE)))
+				print("Light: {} lux".format(plant.parameter_value(MI_LIGHT)))
+				print("Conductivity: {} uS/cm".format(plant.parameter_value(MI_CONDUCTIVITY)))
+				print("Battery: {} %".format(plant.parameter_value(MI_BATTERY)))
+				if plant.parameter_value(MI_MOISTURE) <= 100:
+					topic = MiFlora.baseTopic + plant._mac.replace(":", "") + '/'
+					# Read battery and firmware version attribute
+					msgs.append({'topic': topic + 'battery', 'payload': plant.parameter_value(MI_BATTERY)})
+					msgs.append({'topic': topic + 'firmware', 'payload': plant.firmware_version()})
+					msgs.append({'topic': topic + 'temperature', 'payload': plant.parameter_value(MI_TEMPERATURE)})
+					msgs.append({'topic': topic + 'light', 'payload': plant.parameter_value(MI_LIGHT)})
+					msgs.append({'topic': topic + 'moisture', 'payload': plant.parameter_value(MI_MOISTURE)})
+					msgs.append({'topic': topic + 'fertility', 'payload': plant.parameter_value(MI_CONDUCTIVITY)})
+			except:
+				print("Error during reading:", sys.exc_info()[0])
 
-	for plant in plants:
-
-		try:
-			print("Getting data from Mi Flora")
-			print("MAC address: {}".format(plant._mac))
-			print("FW: {}".format(plant.firmware_version()))
-			print("Name: {}".format(plant.name()))
-			print("Temperature: {} C".format(plant.parameter_value(MI_TEMPERATURE)))
-			print("Moisture: {}".format(plant.parameter_value(MI_MOISTURE)))
-			print("Light: {} lux".format(plant.parameter_value(MI_LIGHT)))
-			print("Conductivity: {} uS/cm".format(plant.parameter_value(MI_CONDUCTIVITY)))
-			print("Battery: {} %".format(plant.parameter_value(MI_BATTERY)))
-			if plant.parameter_value(MI_MOISTURE) <= 100:
-				topic = baseTopic + plant._mac.replace(":", "") + '/'
-				# Read battery and firmware version attribute
-				msgs.append({'topic': topic + 'battery', 'payload': plant.parameter_value(MI_BATTERY)})
-				msgs.append({'topic': topic + 'firmware', 'payload': plant.firmware_version()})
-				msgs.append({'topic': topic + 'temperature', 'payload': plant.parameter_value(MI_TEMPERATURE)})
-				msgs.append({'topic': topic + 'light', 'payload': plant.parameter_value(MI_LIGHT)})
-				msgs.append({'topic': topic + 'moisture', 'payload': plant.parameter_value(MI_MOISTURE)})
-				msgs.append({'topic': topic + 'fertility', 'payload': plant.parameter_value(MI_CONDUCTIVITY)})
-		except:
-			print("Error during reading:", sys.exc_info()[0])
-
-		print(msgs)
-		if len(msgs) > 0:
-			publish.multiple(msgs, hostname="localhost", port=1883, keepalive=60, will=None, auth=None, tls=None)
-
-	time.sleep(900)
+			print(msgs)
+			if len(msgs) > 0:
+				publish.multiple(msgs, hostname="localhost", port=1883, keepalive=60, will=None, auth=None, tls=None)
