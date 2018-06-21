@@ -52,7 +52,11 @@ if __name__ == '__main__':
 
 	while(True):
 		mac = "ec:f0:0e:49:34:d8"
-		devices = scanner.scan(10.0)
+		try:
+			devices = scanner.scan(10.0)
+		except bluepy.btle.BTLEException:
+			print("Failed getting scanner.")
+			continue
 		target_device = [d for d in devices if d.addr == mac]
 		if len(target_device) > 0:
 			dev = target_device[0]
