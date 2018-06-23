@@ -60,16 +60,17 @@ if __name__ == '__main__':
 		target_device = [d for d in devices if d.addr == mac]
 		if len(target_device) > 0:
 			dev = target_device[0]
-			raw_data = dev.rawData[3:]
-			data_type = "%02x" % struct.unpack("<B", bytes([raw_data[18]]))[0]
-			if data_type[1] == '1':
-				data = parse_data_type1(raw_data, "openhab/am/")
-			elif data_type[1] == '2':
-				data = parse_data_type2(raw_data, "openhab/am/")
-			else:
-				data = []
-			print(data)
-			publish.multiple(data, hostname="localhost", port=1883, keepalive=60, will=None, auth=None, tls=None)
+			if len(dev.rawData) > 0:
+				raw_data = dev.rawData[3:]
+				data_type = "%02x" % struct.unpack("<B", bytes([raw_data[18]]))[0]
+				if data_type[1] == '1':
+					data = parse_data_type1(raw_data, "openhab/am/")
+				elif data_type[1] == '2':
+					data = parse_data_type2(raw_data, "openhab/am/")
+				else:
+					data = []
+				print(data)
+				publish.multiple(data, hostname="localhost", port=1883, keepalive=60, will=None, auth=None, tls=None)
 
 		miflora_scanner.scan()
 
