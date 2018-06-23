@@ -60,7 +60,7 @@ if __name__ == '__main__':
 		target_device = [d for d in devices if d.addr == mac]
 		if len(target_device) > 0:
 			dev = target_device[0]
-			if len(dev.rawData) > 0:
+			if len(dev.rawData) >= 22:
 				raw_data = dev.rawData[3:]
 				data_type = "%02x" % struct.unpack("<B", bytes([raw_data[18]]))[0]
 				if data_type[1] == '1':
