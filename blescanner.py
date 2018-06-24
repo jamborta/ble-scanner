@@ -54,7 +54,7 @@ if __name__ == '__main__':
 		mac = "ec:f0:0e:49:34:d8"
 		try:
 			devices = scanner.scan(10.0)
-		except bluepy.btle.BTLEException:
+		except Exception:
 			print("Failed getting scanner.")
 			continue
 		target_device = [d for d in devices if d.addr == mac]
