@@ -54,8 +54,9 @@ if __name__ == '__main__':
 		mac = "ec:f0:0e:49:34:d8"
 		try:
 			devices = scanner.scan(10.0)
-		except Exception:
-			print("Failed getting scanner.")
+		except Exception as e:
+			print(e)
+			time.sleep(600)
 			continue
 		target_device = [d for d in devices if d.addr == mac]
 		if len(target_device) > 0:
