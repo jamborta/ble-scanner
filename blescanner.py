@@ -34,6 +34,19 @@ def parse_data_type2(data_type2, base_topic):
 	data.append({"topic": base_topic + "humidity", "payload": rel_humidity})
 	return data
 
+def parse_govee_data(manufacturer_data, base_topic):
+	data = []
+	if len(manufacturer_data) == 8:
+		# Govee H5074/H5051/H5052/H5071
+		temp = int.from_bytes(manufacturer_data[3:5], byteorder='little') / 100
+		humidity = int.from_bytes(manufacturer_data[5:7], byteorder='little') / 100
+		battery = manufacturer_data[7]
+		
+		data.append({"topic": base_topic + "temperature", "payload": temp})
+		data.append({"topic": base_topic + "humidity", "payload": humidity})
+		data.append({"topic": base_topic + "battery", "payload": battery})
+	return data
+
 class ScanDelegate(DefaultDelegate):
 	def __init__(self):
 		DefaultDelegate.__init__(self)
@@ -47,33 +60,46 @@ class ScanDelegate(DefaultDelegate):
 
 if __name__ == '__main__':
 	scanner = Scanner().withDelegate(ScanDelegate())
-
 	miflora_scanner = MiFlora()
+	aranet_mac = "ec:f0:0e:49:34:d8"
 
 	while(True):
-		mac = "ec:f0:0e:49:34:d8"
 		try:
 			devices = scanner.scan(10.0)
 		except Exception as e:
 			print(e)
 			time.sleep(600)
 			continue
-		target_device = [d for d in devices if d.addr == mac]
-		if len(target_device) > 0:
-			dev = target_device[0]
-			if len(dev.rawData) >= 22:
-				raw_data = dev.rawData[3:]
-				data_type = "%02x" % struct.unpack("<B", bytes([raw_data[18]]))[0]
-				if data_type[1] == '1':
-					data = parse_data_type1(raw_data, "openhab/am/")
-				elif data_type[1] == '2':
-					data = parse_data_type2(raw_data, "openhab/am/")
-				else:
-					data = []
-				print(data)
-				publish.multiple(data, hostname="localhost", port=1883, keepalive=60, will=None, auth=None, tls=None)
 
-		# miflora_scanner.scan()
+		# Process all discovered devices
+		for dev in devices:
+			# Check if it's the Aranet device
+			if dev.addr == aranet_mac:
+				if len(dev.rawData) >= 22:
+					raw_data = dev.rawData[3:]
+					data_type = "%02x" % struct.unpack("<B", bytes([raw_data[18]]))[0]
+					if data_type[1] == '1':
+						data = parse_data_type1(raw_data, "openhab/am/")
+					elif data_type[1] == '2':
+						data = parse_data_type2(raw_data, "openhab/am/")
+					else:
+						data = []
+					print("Aranet data:", data)
+					publish.multiple(data, hostname="localhost", port=1883, keepalive=60, will=None, auth=None, tls=None)
+			
+			# Check for Govee devices
+			for (adtype, desc, value) in dev.getScanData():
+				if adtype == 255:  # Manufacturer Specific Data
+					try:
+						manufacturer_data = bytes.fromhex(value)
+						if len(manufacturer_data) > 0 and manufacturer_data[0:2] == b'\x88\xec':  # Govee prefix
+							print(f"Found Govee device: {dev.addr}")
+							data = parse_govee_data(manufacturer_data, f"openhab/govee/{dev.addr.replace(':', '')}/")
+							print("Govee data:", data)
+							publish.multiple(data, hostname="localhost", port=1883, keepalive=60, will=None, auth=None, tls=None)
+					except Exception as e:
+						print(f"Error processing device {dev.addr}: {e}")
+						continue
 
 		sleep_s = 600
 		print("Sleeping for %s seconds" % sleep_s)
