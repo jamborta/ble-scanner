@@ -93,7 +93,6 @@ if __name__ == '__main__':
 			scan_data = dev.getScanData()
 			for (adtype, desc, value) in scan_data:
 				if adtype == 255:  # Manufacturer Specific Data
-					print("  Found manufacturer data: %s" % value)
 					try:
 						manufacturer_data = bytes.fromhex(value)
 						print("  Manufacturer prefix: %s" % manufacturer_data[0:2].hex())
