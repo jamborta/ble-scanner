@@ -92,7 +92,6 @@ if __name__ == '__main__':
 			# Check for Govee devices
 			scan_data = dev.getScanData()
 			for (adtype, desc, value) in scan_data:
-				print("  Adtype: %d, Desc: %s" % (adtype, desc))
 				if adtype == 255:  # Manufacturer Specific Data
 					print("  Found manufacturer data: %s" % value)
 					try:
