@@ -66,6 +66,7 @@ if __name__ == '__main__':
 	while(True):
 		try:
 			devices = scanner.scan(10.0)
+			print("Found %d devices" % len(devices))
 		except Exception as e:
 			print(e)
 			time.sleep(600)
@@ -73,6 +74,7 @@ if __name__ == '__main__':
 
 		# Process all discovered devices
 		for dev in devices:
+			print("\nChecking device: %s" % dev.addr)
 			# Check if it's the Aranet device
 			if dev.addr == aranet_mac:
 				if len(dev.rawData) >= 22:
@@ -88,10 +90,17 @@ if __name__ == '__main__':
 					publish.multiple(data, hostname="localhost", port=1883, keepalive=60, will=None, auth=None, tls=None)
 			
 			# Check for Govee devices
-			for (adtype, desc, value) in dev.getScanData():
+			print("Scanning data for device: %s" % dev.addr)
+			scan_data = dev.getScanData()
+			print("Scan data entries: %d" % len(scan_data))
+			
+			for (adtype, desc, value) in scan_data:
+				print("  Adtype: %d, Desc: %s" % (adtype, desc))
 				if adtype == 255:  # Manufacturer Specific Data
+					print("  Found manufacturer data: %s" % value)
 					try:
 						manufacturer_data = bytes.fromhex(value)
+						print("  Manufacturer prefix: %s" % manufacturer_data[0:2].hex())
 						if len(manufacturer_data) > 0 and manufacturer_data[0:2] == b'\x88\xec':  # Govee prefix
 							print("Found Govee device: %s" % dev.addr)
 							data = parse_govee_h5074(manufacturer_data, "openhab/govee/%s/" % dev.addr.replace(':', ''))
@@ -103,7 +112,7 @@ if __name__ == '__main__':
 						continue
 
 		sleep_s = 600
-		print("Sleeping for %s seconds" % sleep_s)
+		print("\nSleeping for %s seconds" % sleep_s)
 		time.sleep(sleep_s)
 
 
