@@ -73,7 +73,7 @@ if __name__ == '__main__':
 				print(data)
 				publish.multiple(data, hostname="localhost", port=1883, keepalive=60, will=None, auth=None, tls=None)
 
-		miflora_scanner.scan()
+		# miflora_scanner.scan()
 
 		sleep_s = 600
 		print("Sleeping for %s seconds" % sleep_s)
