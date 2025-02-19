@@ -93,12 +93,13 @@ if __name__ == '__main__':
 					try:
 						manufacturer_data = bytes.fromhex(value)
 						if len(manufacturer_data) > 0 and manufacturer_data[0:2] == b'\x88\xec':  # Govee prefix
-							print(f"Found Govee device: {dev.addr}")
-							data = parse_govee_data(manufacturer_data, f"openhab/govee/{dev.addr.replace(':', '')}/")
-							print("Govee data:", data)
+							print("Found Govee device: %s" % dev.addr)
+							topic_base = "openhab/govee/%s/" % dev.addr.replace(':', '')
+							data = parse_govee_data(manufacturer_data, topic_base)
+							print("Govee data: %s" % str(data))
 							publish.multiple(data, hostname="localhost", port=1883, keepalive=60, will=None, auth=None, tls=None)
 					except Exception as e:
-						print(f"Error processing device {dev.addr}: {e}")
+						print("Error processing device %s: %s" % (dev.addr, str(e)))
 						continue
 
 		sleep_s = 600
