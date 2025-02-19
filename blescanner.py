@@ -34,10 +34,10 @@ def parse_data_type2(data_type2, base_topic):
 	data.append({"topic": base_topic + "humidity", "payload": rel_humidity})
 	return data
 
-def parse_govee_data(manufacturer_data, base_topic):
+def parse_govee_h5074(manufacturer_data, base_topic):
+	"""Parse H5074 data."""
 	data = []
 	if len(manufacturer_data) == 8:
-		# Govee H5074/H5051/H5052/H5071
 		temp = int.from_bytes(manufacturer_data[3:5], byteorder='little') / 100
 		humidity = int.from_bytes(manufacturer_data[5:7], byteorder='little') / 100
 		battery = manufacturer_data[7]
@@ -94,10 +94,10 @@ if __name__ == '__main__':
 						manufacturer_data = bytes.fromhex(value)
 						if len(manufacturer_data) > 0 and manufacturer_data[0:2] == b'\x88\xec':  # Govee prefix
 							print("Found Govee device: %s" % dev.addr)
-							topic_base = "openhab/govee/%s/" % dev.addr.replace(':', '')
-							data = parse_govee_data(manufacturer_data, topic_base)
-							print("Govee data: %s" % str(data))
-							publish.multiple(data, hostname="localhost", port=1883, keepalive=60, will=None, auth=None, tls=None)
+							data = parse_govee_h5074(manufacturer_data, "openhab/govee/%s/" % dev.addr.replace(':', ''))
+							if data:
+								print("Govee data:", data)
+								publish.multiple(data, hostname="localhost", port=1883, keepalive=60, will=None, auth=None, tls=None)
 					except Exception as e:
 						print("Error processing device %s: %s" % (dev.addr, str(e)))
 						continue
