@@ -90,10 +90,7 @@ if __name__ == '__main__':
 					publish.multiple(data, hostname="localhost", port=1883, keepalive=60, will=None, auth=None, tls=None)
 			
 			# Check for Govee devices
-			print("Scanning data for device: %s" % dev.addr)
 			scan_data = dev.getScanData()
-			print("Scan data entries: %d" % len(scan_data))
-			
 			for (adtype, desc, value) in scan_data:
 				print("  Adtype: %d, Desc: %s" % (adtype, desc))
 				if adtype == 255:  # Manufacturer Specific Data
