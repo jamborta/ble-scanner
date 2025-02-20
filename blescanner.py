@@ -37,14 +37,23 @@ def parse_data_type2(data_type2, base_topic):
 def parse_govee_h5074(manufacturer_data, base_topic):
 	"""Parse H5074 data."""
 	data = []
-	if len(manufacturer_data) == 8:
-		temp = int.from_bytes(manufacturer_data[3:5], byteorder='little') / 100
-		humidity = int.from_bytes(manufacturer_data[5:7], byteorder='little') / 100
-		battery = manufacturer_data[7]
-		
-		data.append({"topic": base_topic + "temperature", "payload": temp})
-		data.append({"topic": base_topic + "humidity", "payload": humidity})
-		data.append({"topic": base_topic + "battery", "payload": battery})
+	print("  Raw manufacturer data: %s" % manufacturer_data.hex())  # Debug line
+	
+	# For the format 0x00350949145C02:
+	# Bytes 2-3: Temperature (little endian)
+	# Bytes 4-5: Humidity (little endian)
+	# Byte 6: Battery
+	if len(manufacturer_data) >= 7:  # Changed from 8 to 7 to match new format
+		try:
+			temp = int.from_bytes(manufacturer_data[2:4], byteorder='little') / 100
+			humidity = int.from_bytes(manufacturer_data[4:6], byteorder='little') / 100
+			battery = manufacturer_data[6]
+			
+			data.append({"topic": base_topic + "temperature", "payload": temp})
+			data.append({"topic": base_topic + "humidity", "payload": humidity})
+			data.append({"topic": base_topic + "battery", "payload": battery})
+		except Exception as e:
+			print("  Error parsing data: %s" % str(e))
 	return data
 
 class ScanDelegate(DefaultDelegate):
@@ -91,21 +100,29 @@ if __name__ == '__main__':
 			
 			# Check for Govee devices
 			scan_data = dev.getScanData()
+			is_govee = False
+			
+			# First check for Govee service UUID
 			for (adtype, desc, value) in scan_data:
-				if adtype == 255:  # Manufacturer Specific Data
-					try:
-						manufacturer_data = bytes.fromhex(value)
-						print("  Manufacturer prefix: %s" % manufacturer_data[0:2].hex())
-						# Check for both possible byte orders of the Govee prefix
-						if len(manufacturer_data) > 0 and (manufacturer_data[0:2] == b'\x88\xec' or manufacturer_data[0:2] == b'\xec\x88'):
-							print("Found Govee device: %s" % dev.addr)
+				if adtype == 2 or adtype == 3:  # Complete or Incomplete List of 16-bit Service UUIDs
+					if "ec88" in value.lower():
+						is_govee = True
+						break
+			
+			if is_govee:
+				# Look for the manufacturer data
+				for (adtype, desc, value) in scan_data:
+					if adtype == 255:  # Manufacturer Specific Data
+						try:
+							manufacturer_data = bytes.fromhex(value)
+							print("  Raw manufacturer data: %s" % manufacturer_data.hex())
 							data = parse_govee_h5074(manufacturer_data, "openhab/govee/%s/" % dev.addr.replace(':', ''))
 							if data:
 								print("Govee data:", data)
 								publish.multiple(data, hostname="localhost", port=1883, keepalive=60, will=None, auth=None, tls=None)
-					except Exception as e:
-						print("Error processing device %s: %s" % (dev.addr, str(e)))
-						continue
+						except Exception as e:
+							print("Error processing device %s: %s" % (dev.addr, str(e)))
+							continue
 
 		sleep_s = 600
 		print("\nSleeping for %s seconds" % sleep_s)
