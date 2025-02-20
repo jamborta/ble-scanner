@@ -124,23 +124,19 @@ if __name__ == '__main__':
 						break
 			
 			if is_govee:
-				try:
-					print("Connecting to Govee device: %s" % dev.addr)
-					peripheral = Peripheral(dev.addr, ADDR_TYPE_RANDOM)
-					# Read characteristic 0x2A50
-					char = peripheral.getCharacteristics(uuid="0x2a50")[0]
-					char_data = char.read()
-					print("  Raw characteristic data: %s" % char_data.hex())
-					
-					data = parse_govee_h5074(char_data, "openhab/govee/%s/" % dev.addr.replace(':', ''))
-					if data:
-						print("Govee data:", data)
-						publish.multiple(data, hostname="localhost", port=1883, keepalive=60, will=None, auth=None, tls=None)
-					
-					peripheral.disconnect()
-				except Exception as e:
-					print("Error connecting to Govee device %s: %s" % (dev.addr, str(e)))
-					continue
+				# Look for the manufacturer data
+				for (adtype, desc, value) in scan_data:
+					if adtype == 255:  # Manufacturer Specific Data
+						try:
+							manufacturer_data = bytes.fromhex(value)
+							print("  Raw manufacturer data: %s" % manufacturer_data.hex())
+							data = parse_govee_h5074(manufacturer_data, "openhab/govee/%s/" % dev.addr.replace(':', ''))
+							if data:
+								print("Govee data:", data)
+								publish.multiple(data, hostname="localhost", port=1883, keepalive=60, will=None, auth=None, tls=None)
+						except Exception as e:
+							print("Error processing device %s: %s" % (dev.addr, str(e)))
+							continue
 
 		sleep_s = 600
 		print("\nSleeping for %s seconds" % sleep_s)
