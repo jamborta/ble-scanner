@@ -96,7 +96,8 @@ if __name__ == '__main__':
 					try:
 						manufacturer_data = bytes.fromhex(value)
 						print("  Manufacturer prefix: %s" % manufacturer_data[0:2].hex())
-						if len(manufacturer_data) > 0 and manufacturer_data[0:2] == b'\x88\xec':  # Govee prefix
+						# Check for both possible byte orders of the Govee prefix
+						if len(manufacturer_data) > 0 and (manufacturer_data[0:2] == b'\x88\xec' or manufacturer_data[0:2] == b'\xec\x88'):
 							print("Found Govee device: %s" % dev.addr)
 							data = parse_govee_h5074(manufacturer_data, "openhab/govee/%s/" % dev.addr.replace(':', ''))
 							if data:
