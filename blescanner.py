@@ -39,18 +39,28 @@ def parse_govee_h5074(manufacturer_data, base_topic):
 	data = []
 	print("  Raw manufacturer data: %s" % manufacturer_data.hex())  # Debug line
 	
-	# For the format 0x00350949145C02:
-	# Bytes 2-3: Temperature (little endian)
-	# Bytes 4-5: Humidity (little endian)
-	# Byte 6: Battery
-	if len(manufacturer_data) >= 7:  # Changed from 8 to 7 to match new format
+	if len(manufacturer_data) >= 7:
 		try:
-			temp = int.from_bytes(manufacturer_data[2:4], byteorder='little') / 100
-			humidity = int.from_bytes(manufacturer_data[4:6], byteorder='little') / 100
-			battery = manufacturer_data[6]
+			# Print raw bytes for debugging
+			raw_temp = manufacturer_data[2:4].hex()
+			raw_humidity = manufacturer_data[4:6].hex()
+			raw_battery = manufacturer_data[6]
+			print(f"  Raw values - temp: {raw_temp}, humidity: {raw_humidity}, battery: {raw_battery}")
 			
-			data.append({"topic": base_topic + "temperature", "payload": temp})
-			data.append({"topic": base_topic + "humidity", "payload": humidity})
+			# Temperature: Convert to signed integer and divide by 100
+			temp_raw = int.from_bytes(manufacturer_data[2:4], byteorder='little')
+			if temp_raw > 32767:  # Handle negative temperatures
+				temp_raw -= 65536
+			temp = temp_raw / 100
+			
+			# Humidity: divide by 100 to get percentage
+			humidity = int.from_bytes(manufacturer_data[4:6], byteorder='little') / 100
+			battery = raw_battery
+			
+			print(f"  Converted values - temp: {temp}°C, humidity: {humidity}%, battery: {battery}%")
+			
+			data.append({"topic": base_topic + "temperature", "payload": round(temp, 2)})
+			data.append({"topic": base_topic + "humidity", "payload": round(humidity, 2)})
 			data.append({"topic": base_topic + "battery", "payload": battery})
 		except Exception as e:
 			print("  Error parsing data: %s" % str(e))
