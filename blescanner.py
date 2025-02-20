@@ -102,10 +102,15 @@ if __name__ == '__main__':
 			scan_data = dev.getScanData()
 			is_govee = False
 			
-			# First check for Govee service UUID
+			# First check for Govee service UUID or device name
 			for (adtype, desc, value) in scan_data:
 				if adtype == 2 or adtype == 3:  # Complete or Incomplete List of 16-bit Service UUIDs
 					if "ec88" in value.lower():
+						is_govee = True
+						break
+				elif adtype == 9:  # Complete Local Name
+					if "Govee_H5074" in value:
+						print("Found Govee device by name: %s" % value)
 						is_govee = True
 						break
 			
