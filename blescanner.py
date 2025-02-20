@@ -93,7 +93,6 @@ if __name__ == '__main__':
 
 		# Process all discovered devices
 		for dev in devices:
-			print("\nChecking device: %s" % dev.addr)
 			# Check if it's the Aranet device
 			if dev.addr == aranet_mac:
 				if len(dev.rawData) >= 22:
