@@ -47,14 +47,14 @@ def parse_govee_h5074(manufacturer_data, base_topic):
 			raw_battery = manufacturer_data[6]
 			print("  Raw values - temp: {}, humidity: {}, battery: {}".format(raw_temp, raw_humidity, raw_battery))
 			
-			# Temperature: Convert to signed integer and divide by 100
+			# Temperature: Convert to signed integer and divide by 1000
 			temp_raw = int.from_bytes(manufacturer_data[2:4], byteorder='little')
 			if temp_raw > 32767:  # Handle negative temperatures
 				temp_raw -= 65536
-			temp = temp_raw / 100
+			temp = temp_raw / 1000
 			
-			# Humidity: divide by 100 to get percentage
-			humidity = int.from_bytes(manufacturer_data[4:6], byteorder='little') / 100
+			# Humidity: divide by 1000 to get percentage
+			humidity = int.from_bytes(manufacturer_data[4:6], byteorder='little') / 1000
 			battery = raw_battery
 			
 			print("  Converted values - temp: {}°C, humidity: {}%, battery: {}%".format(temp, humidity, battery))
