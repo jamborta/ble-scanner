@@ -45,7 +45,7 @@ def parse_govee_h5074(manufacturer_data, base_topic):
 			raw_temp = manufacturer_data[2:4].hex()
 			raw_humidity = manufacturer_data[4:6].hex()
 			raw_battery = manufacturer_data[6]
-			print(f"  Raw values - temp: {raw_temp}, humidity: {raw_humidity}, battery: {raw_battery}")
+			print("  Raw values - temp: {}, humidity: {}, battery: {}".format(raw_temp, raw_humidity, raw_battery))
 			
 			# Temperature: Convert to signed integer and divide by 100
 			temp_raw = int.from_bytes(manufacturer_data[2:4], byteorder='little')
@@ -57,7 +57,7 @@ def parse_govee_h5074(manufacturer_data, base_topic):
 			humidity = int.from_bytes(manufacturer_data[4:6], byteorder='little') / 100
 			battery = raw_battery
 			
-			print(f"  Converted values - temp: {temp}°C, humidity: {humidity}%, battery: {battery}%")
+			print("  Converted values - temp: {}°C, humidity: {}%, battery: {}%".format(temp, humidity, battery))
 			
 			data.append({"topic": base_topic + "temperature", "payload": round(temp, 2)})
 			data.append({"topic": base_topic + "humidity", "payload": round(humidity, 2)})
