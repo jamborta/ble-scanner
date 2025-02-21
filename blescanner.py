@@ -115,9 +115,7 @@ if __name__ == '__main__':
 				for (adtype, desc, value) in scan_data:
 					if adtype == 255:  # Manufacturer Specific Data
 						try:
-							manufacturer_data = bytes.fromhex(value)
-							print("Manufacturer data:", manufacturer_data.hex(), "device:", dev.addr)
-							data = parse_govee_h5074_exact(manufacturer_data, "openhab/govee/%s/" % dev.addr.replace(':', ''))
+							data = parse_govee_h5074_exact(value, "openhab/govee/%s/" % dev.addr.replace(':', ''))
 							if data:
 								print("Govee data:", data)
 								publish.multiple(data, hostname="localhost", port=1883, keepalive=60, will=None, auth=None, tls=None)
