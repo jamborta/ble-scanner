@@ -44,8 +44,8 @@ def parse_govee_h5074(manufacturer_data, base_topic):
 			# Print raw bytes for debugging
 			raw_temp = manufacturer_data[12:14].hex()  # Changed position
 			raw_humidity = manufacturer_data[14:15].hex()  # Changed position
-			raw_battery = manufacturer_data[15] if len(manufacturer_data) > 15 else 0  # Battery might be here
-			print("  Raw values - temp: {}, humidity: {}, battery: {}".format(raw_temp, raw_humidity, raw_battery))
+			battery = manufacturer_data[15] if len(manufacturer_data) > 15 else 0  # Battery might be here
+			print("  Raw values - temp: {}, humidity: {}, battery: {}".format(raw_temp, raw_humidity, battery))
 			
 			# Temperature: decode as signed 16-bit integer
 			temp_raw = int.from_bytes(manufacturer_data[12:14], byteorder='little', signed=True)
@@ -56,9 +56,13 @@ def parse_govee_h5074(manufacturer_data, base_topic):
 			
 			print("  Converted values - temp: {}°C, humidity: {}%, battery: {}%".format(temp, humidity, battery))
 			
-			data.append({"topic": base_topic + "temperature", "payload": round(temp, 2)})
-			data.append({"topic": base_topic + "humidity", "payload": round(humidity, 2)})
-			data.append({"topic": base_topic + "battery", "payload": battery})
+			# Only append valid readings (filter out obviously wrong values)
+			if -50 <= temp <= 50:  # reasonable temperature range
+				data.append({"topic": base_topic + "temperature", "payload": round(temp, 2)})
+			if 0 <= humidity <= 100:  # valid humidity range
+				data.append({"topic": base_topic + "humidity", "payload": round(humidity, 2)})
+			if 0 <= battery <= 100:  # valid battery percentage range
+				data.append({"topic": base_topic + "battery", "payload": battery})
 		except Exception as e:
 			print("  Error parsing data: %s" % str(e))
 	return data
