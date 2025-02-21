@@ -45,15 +45,16 @@ def parse_govee_h5074(manufacturer_data, base_topic):
 			temp_raw = int.from_bytes(manufacturer_data[6:8], byteorder='big', signed=True)
 			temp = temp_raw / 100
 			
-			# Humidity is byte 8
-			humidity = manufacturer_data[8]
+			# Humidity is byte 8 (convert from hex to decimal)
+			humidity = int(manufacturer_data[8])  # This ensures proper decimal conversion
 			
-			print("  Converted values (new format) - temp: {}°C, humidity: {}%".format(temp, humidity))
+			print("  Raw values - temp_raw: {}, humidity_raw: 0x{:02x}".format(temp_raw, manufacturer_data[8]))
+			print("  Converted values (new format) - temp: {:.2f}°C, humidity: {}%".format(temp, humidity))
 			
 			if -50 <= temp <= 50:
 				data.append({"topic": base_topic + "temperature", "payload": round(temp, 2)})
 			if 0 <= humidity <= 100:
-				data.append({"topic": base_topic + "humidity", "payload": round(humidity, 2)})
+				data.append({"topic": base_topic + "humidity", "payload": humidity})
 				
 		except Exception as e:
 			print("  Error parsing data: %s" % str(e))
@@ -90,8 +91,51 @@ class ScanDelegate(DefaultDelegate):
 		elif isNewData:
 			print("Received new data from", dev.addr)
 
+def test_govee_parser():
+	"""Test function to verify Govee H5074 parsing logic"""
+	print("\nRunning Govee parser tests...")
+	
+	# Test cases with known values
+	test_cases = [
+		{
+			'hex': '88ec001b0956145d02',
+			'expected_temp': 23.5,  # What we expect the temperature to be
+			'expected_humidity': 20  # What we expect the humidity to be (0x14 = 20)
+		},
+		# Add more test cases here
+	]
+	
+	for test in test_cases:
+		print(f"\nTesting data: {test['hex']}")
+		manufacturer_data = bytes.fromhex(test['hex'])
+		
+		# Parse bytes directly
+		temp_raw = int.from_bytes(manufacturer_data[6:8], byteorder='big', signed=True)
+		humidity = manufacturer_data[8]
+		
+		print(f"Raw bytes - temp: {manufacturer_data[6:8].hex()}, humidity: {manufacturer_data[8]:02x}")
+		print(f"Raw decimal - temp: {temp_raw}, humidity: {humidity}")
+		
+		# Try different temperature scaling factors
+		temp_100 = temp_raw / 100
+		temp_10 = temp_raw / 10
+		temp_1000 = temp_raw / 1000
+		
+		print(f"Temperature calculations:")
+		print(f"  /100: {temp_100:.2f}°C")
+		print(f"  /10: {temp_10:.2f}°C")
+		print(f"  /1000: {temp_1000:.2f}°C")
+		print(f"Expected temperature: {test['expected_temp']}°C")
+		print(f"Expected humidity: {test['expected_humidity']}%")
+		
+		# Test the actual parser
+		data = parse_govee_h5074(manufacturer_data, "test/")
+		print(f"Parser output: {data}")
 
 if __name__ == '__main__':
+	# Add this line to run tests
+	test_govee_parser()
+	
 	scanner = Scanner().withDelegate(ScanDelegate())
 	miflora_scanner = MiFlora()
 	aranet_mac = "ec:f0:0e:49:34:d8"
