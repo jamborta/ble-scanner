@@ -75,6 +75,8 @@ def parse_govee_h5074(manufacturer_data, base_topic):
 				data.append({"topic": base_topic + "humidity", "payload": round(humidity, 2)})
 			if 0 <= battery <= 100:
 				data.append({"topic": base_topic + "battery", "payload": battery})
+		except Exception as e:
+			print("  Error parsing data: %s" % str(e))
 	
 	return data
 
