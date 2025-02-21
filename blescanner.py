@@ -49,7 +49,7 @@ def parse_govee_h5074(manufacturer_data, base_topic):
 			
 			# Temperature: decode as signed 16-bit integer
 			temp_raw = int.from_bytes(manufacturer_data[12:14], byteorder='little', signed=True)
-			temp = temp_raw / 100  # Scale factor for temperature
+			temp = temp_raw / 1000  # Changed scale factor from 100 to 1000
 			
 			# Humidity: single byte percentage
 			humidity = manufacturer_data[14]  # Direct percentage
