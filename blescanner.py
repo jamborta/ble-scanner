@@ -39,21 +39,20 @@ def parse_govee_h5074(manufacturer_data, base_topic):
 	data = []
 	print("  Raw manufacturer data: %s" % manufacturer_data.hex())  # Debug line
 	
-	if len(manufacturer_data) >= 7:
+	if len(manufacturer_data) >= 15:  # Adjust length check for the new format
 		try:
 			# Print raw bytes for debugging
-			raw_temp = manufacturer_data[2:4].hex()
-			raw_humidity = manufacturer_data[4:6].hex()
-			raw_battery = manufacturer_data[6]
+			raw_temp = manufacturer_data[12:14].hex()  # Changed position
+			raw_humidity = manufacturer_data[14:15].hex()  # Changed position
+			raw_battery = manufacturer_data[15] if len(manufacturer_data) > 15 else 0  # Battery might be here
 			print("  Raw values - temp: {}, humidity: {}, battery: {}".format(raw_temp, raw_humidity, raw_battery))
 			
-			# Temperature: multiply by 0.01 to get Celsius
-			temp_raw = int.from_bytes(manufacturer_data[2:4], byteorder='little')
-			temp = temp_raw * 0.01
+			# Temperature: decode as signed 16-bit integer
+			temp_raw = int.from_bytes(manufacturer_data[12:14], byteorder='little', signed=True)
+			temp = temp_raw / 100  # Scale factor for temperature
 			
-			# Humidity: multiply by 0.01 to get percentage
-			humidity = int.from_bytes(manufacturer_data[4:6], byteorder='little') * 0.01
-			battery = raw_battery
+			# Humidity: single byte percentage
+			humidity = manufacturer_data[14]  # Direct percentage
 			
 			print("  Converted values - temp: {}°C, humidity: {}%, battery: {}%".format(temp, humidity, battery))
 			
