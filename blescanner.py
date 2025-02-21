@@ -92,57 +92,7 @@ class ScanDelegate(DefaultDelegate):
 		elif isNewData:
 			print("Received new data from", dev.addr)
 
-def test_govee_parser():
-	"""Test function to verify Govee H5074 parsing logic"""
-	print("\nRunning Govee parser tests...")
-	
-	# Test cases with known values
-	test_cases = [
-		{
-			'hex': '88ec001b0956145d02',
-			'expected_temp': 23.5,  # What we expect the temperature to be
-			'expected_humidity': 20  # What we expect the humidity to be (0x14 = 20)
-		},
-		{
-			'hex': '88ec001f095b145d02',  # Your actual data
-			'expected_temp': 23.5,
-			'expected_humidity': 20
-		}
-	]
-	
-	for test in test_cases:
-		print("\nTesting data: {}".format(test['hex']))
-		manufacturer_data = bytes.fromhex(test['hex'])
-		
-		# Parse bytes directly - using same method as parser
-		temp_bytes = bytes([manufacturer_data[7], manufacturer_data[6]])  # Swap byte order
-		temp_raw = int.from_bytes(temp_bytes, byteorder='big', signed=True)
-		humidity = manufacturer_data[8]
-		
-		print("Raw bytes - temp: {}, humidity: {:02x}".format(
-			temp_bytes.hex(), manufacturer_data[8]))
-		print("Raw decimal - temp: {}, humidity: {}".format(temp_raw, humidity))
-		
-		# Try different temperature scaling factors
-		temp_100 = temp_raw / 100
-		temp_10 = temp_raw / 10
-		temp_1000 = temp_raw / 1000
-		
-		print("Temperature calculations:")
-		print("  /100: {:.2f}°C".format(temp_100))
-		print("  /10: {:.2f}°C".format(temp_10))
-		print("  /1000: {:.2f}°C".format(temp_1000))
-		print("Expected temperature: {}°C".format(test['expected_temp']))
-		print("Expected humidity: {}%".format(test['expected_humidity']))
-		
-		# Test the actual parser
-		data = parse_govee_h5074(manufacturer_data, "test/")
-		print("Parser output: {}".format(data))
-
-if __name__ == '__main__':
-	# Add this line to run tests
-	test_govee_parser()
-	
+if __name__ == '__main__':	
 	scanner = Scanner().withDelegate(ScanDelegate())
 	miflora_scanner = MiFlora()
 	aranet_mac = "ec:f0:0e:49:34:d8"
@@ -194,7 +144,6 @@ if __name__ == '__main__':
 					if adtype == 255:  # Manufacturer Specific Data
 						try:
 							manufacturer_data = bytes.fromhex(value)
-							print("  Raw manufacturer data: %s" % manufacturer_data.hex())
 							data = parse_govee_h5074(manufacturer_data, "openhab/govee/%s/" % dev.addr.replace(':', ''))
 							if data:
 								print("Govee data:", data)
