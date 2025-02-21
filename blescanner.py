@@ -41,15 +41,15 @@ def parse_govee_h5074(manufacturer_data, base_topic):
 	
 	if manufacturer_data.hex().startswith('88ec'):  # New format
 		try:
-			# Temperature is bytes 6-7 (swapped order from before)
-			temp_bytes = bytes([manufacturer_data[7], manufacturer_data[6]])  # Swap byte order
-			temp_raw = int.from_bytes(temp_bytes, byteorder='big', signed=True)
+			# Try reading temperature from bytes 4-5 (095c)
+			temp_raw = int.from_bytes(manufacturer_data[4:6], byteorder='big', signed=True)
 			temp = temp_raw / 100
 			
-			# Humidity is byte 8 (convert from hex to decimal)
-			humidity = manufacturer_data[8]  # This should be 20 (0x14)
+			# Try reading humidity from byte 6 (14)
+			humidity = manufacturer_data[6]  # Changed from byte 8 to byte 6
 			
-			print("  Raw values - temp_raw: {}, humidity_raw: 0x{:02x}".format(temp_raw, manufacturer_data[8]))
+			print("  Raw values - temp_raw: {} (0x{:04x}), humidity_raw: 0x{:02x}".format(
+				temp_raw, temp_raw, manufacturer_data[6]))
 			print("  Converted values (new format) - temp: {:.2f}°C, humidity: {}%".format(temp, humidity))
 			
 			if -50 <= temp <= 50:
