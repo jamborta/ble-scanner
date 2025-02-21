@@ -38,11 +38,7 @@ def parse_govee_h5074_exact(data_hex, base_topic):
     """Parses Govee H5074 BLE advertisement data with precise humidity correction."""
     data_bytes = bytes.fromhex(data_hex)
 
-    # Ensure the data has the expected minimum length
-    if len(data_bytes) < 7:
-        raise ValueError("Data is too short to be valid")
-
-    if len(data_bytes) == 7:
+    if len(data_bytes) == 9:
 		# Extract temperature and humidity from the correct positions
         temp, humi = struct.unpack("<hB", data_bytes[-6:-3])  # Correct byte alignment
 
