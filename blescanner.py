@@ -37,31 +37,28 @@ def parse_data_type2(data_type2, base_topic):
 def parse_govee_h5074(manufacturer_data, base_topic):
 	"""Parse H5074 data."""
 	data = []
+	print("  Raw manufacturer data: %s" % manufacturer_data.hex())
 	
-	if len(manufacturer_data) >= 15:  # Adjust length check for the new format
+	# Check if data starts with 88ec (Govee's manufacturer ID)
+	if manufacturer_data.hex().startswith('88ec'):
 		try:
-			# Print raw bytes for debugging
-			raw_temp = manufacturer_data[12:14].hex()  # Changed position
-			raw_humidity = manufacturer_data[14:15].hex()  # Changed position
-			battery = manufacturer_data[15] if len(manufacturer_data) > 15 else 0  # Battery might be here
-			print("  Raw values - temp: {}, humidity: {}, battery: {}".format(raw_temp, raw_humidity, battery))
+			# For the format 88ec001e0954145d02
+			# Temperature is bytes 6-7 (0954 in your example)
+			# Humidity is byte 8 (14 in your example)
 			
-			# Temperature: decode as signed 16-bit integer
-			temp_raw = int.from_bytes(manufacturer_data[12:14], byteorder='little', signed=True)
-			temp = temp_raw / 1000  # Changed scale factor from 100 to 1000
+			temp_raw = int.from_bytes(manufacturer_data[6:8], byteorder='little', signed=True)
+			temp = temp_raw / 100  # Scale factor for this format
 			
-			# Humidity: single byte percentage
-			humidity = manufacturer_data[14]  # Direct percentage
+			humidity = manufacturer_data[8]
 			
-			print("  Converted values - temp: {}°C, humidity: {}%, battery: {}%".format(temp, humidity, battery))
+			print("  Converted values - temp: {}°C, humidity: {}%".format(temp, humidity))
 			
 			# Only append valid readings (filter out obviously wrong values)
 			if -50 <= temp <= 50:  # reasonable temperature range
 				data.append({"topic": base_topic + "temperature", "payload": round(temp, 2)})
 			if 0 <= humidity <= 100:  # valid humidity range
 				data.append({"topic": base_topic + "humidity", "payload": round(humidity, 2)})
-			if 0 <= battery <= 100:  # valid battery percentage range
-				data.append({"topic": base_topic + "battery", "payload": battery})
+			
 		except Exception as e:
 			print("  Error parsing data: %s" % str(e))
 	return data
