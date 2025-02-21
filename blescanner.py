@@ -106,31 +106,32 @@ def test_govee_parser():
 	]
 	
 	for test in test_cases:
-		print(f"\nTesting data: {test['hex']}")
+		print("\nTesting data: {}".format(test['hex']))
 		manufacturer_data = bytes.fromhex(test['hex'])
 		
 		# Parse bytes directly
 		temp_raw = int.from_bytes(manufacturer_data[6:8], byteorder='big', signed=True)
 		humidity = manufacturer_data[8]
 		
-		print(f"Raw bytes - temp: {manufacturer_data[6:8].hex()}, humidity: {manufacturer_data[8]:02x}")
-		print(f"Raw decimal - temp: {temp_raw}, humidity: {humidity}")
+		print("Raw bytes - temp: {}, humidity: {:02x}".format(
+			manufacturer_data[6:8].hex(), manufacturer_data[8]))
+		print("Raw decimal - temp: {}, humidity: {}".format(temp_raw, humidity))
 		
 		# Try different temperature scaling factors
 		temp_100 = temp_raw / 100
 		temp_10 = temp_raw / 10
 		temp_1000 = temp_raw / 1000
 		
-		print(f"Temperature calculations:")
-		print(f"  /100: {temp_100:.2f}°C")
-		print(f"  /10: {temp_10:.2f}°C")
-		print(f"  /1000: {temp_1000:.2f}°C")
-		print(f"Expected temperature: {test['expected_temp']}°C")
-		print(f"Expected humidity: {test['expected_humidity']}%")
+		print("Temperature calculations:")
+		print("  /100: {:.2f}°C".format(temp_100))
+		print("  /10: {:.2f}°C".format(temp_10))
+		print("  /1000: {:.2f}°C".format(temp_1000))
+		print("Expected temperature: {}°C".format(test['expected_temp']))
+		print("Expected humidity: {}%".format(test['expected_humidity']))
 		
 		# Test the actual parser
 		data = parse_govee_h5074(manufacturer_data, "test/")
-		print(f"Parser output: {data}")
+		print("Parser output: {}".format(data))
 
 if __name__ == '__main__':
 	# Add this line to run tests
