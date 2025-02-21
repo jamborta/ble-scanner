@@ -42,17 +42,18 @@ def parse_govee_h5074_exact(data_hex, base_topic):
     if len(data_bytes) < 7:
         raise ValueError("Data is too short to be valid")
 
-    # Extract temperature and humidity from the correct positions
-    temp, humi = struct.unpack("<hB", data_bytes[-6:-3])  # Correct byte alignment
+    if len(data_bytes) == 7:
+		# Extract temperature and humidity from the correct positions
+        temp, humi = struct.unpack("<hB", data_bytes[-6:-3])  # Correct byte alignment
 
-    # Convert temperature and humidity to proper values
-    temperature = temp / 100.0
-    humidity = humi
+		# Convert temperature and humidity to proper values
+        temperature = temp / 100.0
+        humidity = humi
 
-    data = []
-    data.append({"topic": base_topic + "temperature", "payload": temperature})
-    data.append({"topic": base_topic + "humidity", "payload": round(humidity, 2)})
-    return data
+        data = []
+        data.append({"topic": base_topic + "temperature", "payload": temperature})
+        data.append({"topic": base_topic + "humidity", "payload": round(humidity, 2)})
+        return data
 
 class ScanDelegate(DefaultDelegate):
 	def __init__(self):
