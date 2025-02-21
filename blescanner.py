@@ -103,11 +103,10 @@ def test_govee_parser():
 			'expected_temp': 23.5,  # What we expect the temperature to be
 			'expected_humidity': 20  # What we expect the humidity to be (0x14 = 20)
 		},
-		# Add your actual data here
 		{
 			'hex': '88ec001f095b145d02',  # Your actual data
-			'expected_temp': 23.5,  # What temperature do you expect?
-			'expected_humidity': 20  # What humidity do you expect?
+			'expected_temp': 23.5,
+			'expected_humidity': 20
 		}
 	]
 	
@@ -115,12 +114,13 @@ def test_govee_parser():
 		print("\nTesting data: {}".format(test['hex']))
 		manufacturer_data = bytes.fromhex(test['hex'])
 		
-		# Parse bytes directly
-		temp_raw = int.from_bytes(manufacturer_data[6:8], byteorder='big', signed=True)
+		# Parse bytes directly - using same method as parser
+		temp_bytes = bytes([manufacturer_data[7], manufacturer_data[6]])  # Swap byte order
+		temp_raw = int.from_bytes(temp_bytes, byteorder='big', signed=True)
 		humidity = manufacturer_data[8]
 		
 		print("Raw bytes - temp: {}, humidity: {:02x}".format(
-			manufacturer_data[6:8].hex(), manufacturer_data[8]))
+			temp_bytes.hex(), manufacturer_data[8]))
 		print("Raw decimal - temp: {}, humidity: {}".format(temp_raw, humidity))
 		
 		# Try different temperature scaling factors
