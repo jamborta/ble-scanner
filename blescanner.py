@@ -39,7 +39,7 @@ def parse_govee_h5074(manufacturer_data, base_topic):
 	data = []
 	print("  Raw manufacturer data: %s" % manufacturer_data.hex())
 	
-	if len(manufacturer_data) == 7:  # New simplified format
+	if len(manufacturer_data) == 7:  # New format
 		try:
 			# Use struct.unpack with little-endian format for H5074
 			# h: signed short (temp), H: unsigned short (humidity), B: unsigned byte (battery)
@@ -62,6 +62,32 @@ def parse_govee_h5074(manufacturer_data, base_topic):
 			if 0 <= battery <= 100:
 				data.append({"topic": base_topic + "battery", "payload": battery})
 				
+		except Exception as e:
+			print("  Error parsing data: %s" % str(e))
+	
+	elif len(manufacturer_data) >= 15:  # Old format
+		try:
+			# Temperature is in bytes 8-10 (little-endian)
+			temp_raw = int.from_bytes(manufacturer_data[8:10], byteorder='little', signed=True)
+			temp = temp_raw / 100
+			
+			# Humidity is in byte 12
+			humidity = manufacturer_data[12]
+			
+			# Battery is in byte 15
+			battery = manufacturer_data[15] if len(manufacturer_data) > 15 else 0
+			
+			print("  Raw values (old format) - temp_raw: {} (0x{:04x}), humidity_raw: {} (0x{:02x})".format(
+				temp_raw, temp_raw, humidity, humidity))
+			print("  Converted values (old format) - temp: {:.2f}°C, humidity: {}%, battery: {}%".format(
+				temp, humidity, battery))
+			
+			if -50 <= temp <= 50:
+				data.append({"topic": base_topic + "temperature", "payload": round(temp, 2)})
+			if 0 <= humidity <= 100:
+				data.append({"topic": base_topic + "humidity", "payload": humidity})
+			if 0 <= battery <= 100:
+				data.append({"topic": base_topic + "battery", "payload": battery})
 		except Exception as e:
 			print("  Error parsing data: %s" % str(e))
 	
