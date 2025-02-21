@@ -39,50 +39,24 @@ def parse_govee_h5074(manufacturer_data, base_topic):
 	data = []
 	print("  Raw manufacturer data: %s" % manufacturer_data.hex())
 	
-	if manufacturer_data.hex().startswith('88ec'):  # New format
+	if len(manufacturer_data) == 7:  # New simplified format
 		try:
-			# Try reading temperature from bytes 4-5 (095c)
-			temp_raw = int.from_bytes(manufacturer_data[4:6], byteorder='big', signed=True)
+			temp_raw, humidity_raw, battery = struct.unpack("<hHB", manufacturer_data[1:6])
 			temp = temp_raw / 100
+			humidity = humidity_raw / 100
 			
-			# Try reading humidity from byte 6 (14)
-			humidity = manufacturer_data[6]  # Changed from byte 8 to byte 6
-			
-			print("  Raw values - temp_raw: {} (0x{:04x}), humidity_raw: 0x{:02x}".format(
-				temp_raw, temp_raw, manufacturer_data[6]))
-			print("  Converted values (new format) - temp: {:.2f}°C, humidity: {}%".format(temp, humidity))
-			
-			if -50 <= temp <= 50:
-				data.append({"topic": base_topic + "temperature", "payload": round(temp, 2)})
-			if 0 <= humidity <= 100:
-				data.append({"topic": base_topic + "humidity", "payload": humidity})
-				
-		except Exception as e:
-			print("  Error parsing data: %s" % str(e))
-	
-	elif len(manufacturer_data) >= 15:  # Old format
-		try:
-			# Try different byte positions for temperature
-			temp_raw = int.from_bytes(manufacturer_data[8:10], byteorder='little', signed=True)
-			temp = temp_raw / 100  # Keep /100 scaling
-			
-			# Try different byte position for humidity
-			humidity = manufacturer_data[12]  # Changed from 14 to 12
-			
-			# Battery position seems correct
-			battery = manufacturer_data[15] if len(manufacturer_data) > 15 else 0
-			
-			print("  Raw values (old format) - temp_raw: {} (0x{:04x}), humidity_raw: {} (0x{:02x})".format(
-				temp_raw, temp_raw, humidity, humidity))
-			print("  Converted values (old format) - temp: {:.2f}°C, humidity: {}%, battery: {}%".format(
+			print("  Raw values - temp_raw: {}, humidity_raw: {}, battery: {}".format(
+				temp_raw, humidity_raw, battery))
+			print("  Converted values - temp: {:.2f}°C, humidity: {:.1f}%, battery: {}%".format(
 				temp, humidity, battery))
 			
 			if -50 <= temp <= 50:
 				data.append({"topic": base_topic + "temperature", "payload": round(temp, 2)})
 			if 0 <= humidity <= 100:
-				data.append({"topic": base_topic + "humidity", "payload": humidity})
+				data.append({"topic": base_topic + "humidity", "payload": round(humidity, 1)})
 			if 0 <= battery <= 100:
 				data.append({"topic": base_topic + "battery", "payload": battery})
+				
 		except Exception as e:
 			print("  Error parsing data: %s" % str(e))
 	
