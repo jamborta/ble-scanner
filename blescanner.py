@@ -62,19 +62,25 @@ def parse_govee_h5074(manufacturer_data, base_topic):
 	
 	elif len(manufacturer_data) >= 15:  # Old format
 		try:
-			temp_raw = int.from_bytes(manufacturer_data[12:14], byteorder='little', signed=True)
-			temp = temp_raw / 1000
+			# Try different byte positions for temperature
+			temp_raw = int.from_bytes(manufacturer_data[8:10], byteorder='little', signed=True)
+			temp = temp_raw / 100  # Keep /100 scaling
 			
-			humidity = manufacturer_data[14]
+			# Try different byte position for humidity
+			humidity = manufacturer_data[12]  # Changed from 14 to 12
+			
+			# Battery position seems correct
 			battery = manufacturer_data[15] if len(manufacturer_data) > 15 else 0
 			
-			print("  Converted values (old format) - temp: {}°C, humidity: {}%, battery: {}%".format(
+			print("  Raw values (old format) - temp_raw: {} (0x{:04x}), humidity_raw: {} (0x{:02x})".format(
+				temp_raw, temp_raw, humidity, humidity))
+			print("  Converted values (old format) - temp: {:.2f}°C, humidity: {}%, battery: {}%".format(
 				temp, humidity, battery))
 			
 			if -50 <= temp <= 50:
 				data.append({"topic": base_topic + "temperature", "payload": round(temp, 2)})
 			if 0 <= humidity <= 100:
-				data.append({"topic": base_topic + "humidity", "payload": round(humidity, 2)})
+				data.append({"topic": base_topic + "humidity", "payload": humidity})
 			if 0 <= battery <= 100:
 				data.append({"topic": base_topic + "battery", "payload": battery})
 		except Exception as e:
