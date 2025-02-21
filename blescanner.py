@@ -41,7 +41,11 @@ def parse_govee_h5074(manufacturer_data, base_topic):
 	
 	if len(manufacturer_data) == 7:  # New simplified format
 		try:
+			# Use struct.unpack with little-endian format for H5074
+			# h: signed short (temp), H: unsigned short (humidity), B: unsigned byte (battery)
 			temp_raw, humidity_raw, battery = struct.unpack("<hHB", manufacturer_data[1:6])
+			
+			# Scale values appropriately
 			temp = temp_raw / 100
 			humidity = humidity_raw / 100
 			
@@ -50,6 +54,7 @@ def parse_govee_h5074(manufacturer_data, base_topic):
 			print("  Converted values - temp: {:.2f}°C, humidity: {:.1f}%, battery: {}%".format(
 				temp, humidity, battery))
 			
+			# Only update if values are within reasonable ranges
 			if -50 <= temp <= 50:
 				data.append({"topic": base_topic + "temperature", "payload": round(temp, 2)})
 			if 0 <= humidity <= 100:
