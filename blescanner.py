@@ -138,7 +138,7 @@ if __name__ == '__main__':
 							print("Error processing device %s: %s" % (dev.addr, str(e)))
 							continue
 
-		sleep_s = 600
+		sleep_s = 300
 		print("\nSleeping for %s seconds" % sleep_s)
 		time.sleep(sleep_s)
 
