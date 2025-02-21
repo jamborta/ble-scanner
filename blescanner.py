@@ -41,8 +41,8 @@ def parse_govee_h5074(manufacturer_data, base_topic):
 	
 	if manufacturer_data.hex().startswith('88ec'):  # New format
 		try:
-			# Temperature is bytes 6-7
-			temp_raw = int.from_bytes(manufacturer_data[6:8], byteorder='little', signed=True)
+			# Temperature is bytes 6-7, using big-endian order
+			temp_raw = int.from_bytes(manufacturer_data[6:8], byteorder='big', signed=True)
 			temp = temp_raw / 100
 			
 			# Humidity is byte 8
