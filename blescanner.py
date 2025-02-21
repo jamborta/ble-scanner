@@ -115,6 +115,7 @@ if __name__ == '__main__':
 				for (adtype, desc, value) in scan_data:
 					if adtype == 255:  # Manufacturer Specific Data
 						try:
+							print("Processing Govee device:", dev.addr, "with data:", value)
 							data = parse_govee_h5074_exact(value, "openhab/govee/%s/" % dev.addr.replace(':', ''))
 							if data:
 								print("Govee data:", data)
