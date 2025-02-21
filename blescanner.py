@@ -41,12 +41,13 @@ def parse_govee_h5074(manufacturer_data, base_topic):
 	
 	if manufacturer_data.hex().startswith('88ec'):  # New format
 		try:
-			# Temperature is bytes 6-7, using big-endian order
-			temp_raw = int.from_bytes(manufacturer_data[6:8], byteorder='big', signed=True)
+			# Temperature is bytes 6-7 (swapped order from before)
+			temp_bytes = bytes([manufacturer_data[7], manufacturer_data[6]])  # Swap byte order
+			temp_raw = int.from_bytes(temp_bytes, byteorder='big', signed=True)
 			temp = temp_raw / 100
 			
 			# Humidity is byte 8 (convert from hex to decimal)
-			humidity = int(manufacturer_data[8])  # This ensures proper decimal conversion
+			humidity = manufacturer_data[8]  # This should be 20 (0x14)
 			
 			print("  Raw values - temp_raw: {}, humidity_raw: 0x{:02x}".format(temp_raw, manufacturer_data[8]))
 			print("  Converted values (new format) - temp: {:.2f}°C, humidity: {}%".format(temp, humidity))
@@ -102,7 +103,12 @@ def test_govee_parser():
 			'expected_temp': 23.5,  # What we expect the temperature to be
 			'expected_humidity': 20  # What we expect the humidity to be (0x14 = 20)
 		},
-		# Add more test cases here
+		# Add your actual data here
+		{
+			'hex': '88ec001f095b145d02',  # Your actual data
+			'expected_temp': 23.5,  # What temperature do you expect?
+			'expected_humidity': 20  # What humidity do you expect?
+		}
 	]
 	
 	for test in test_cases:
