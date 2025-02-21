@@ -37,7 +37,6 @@ def parse_data_type2(data_type2, base_topic):
 def parse_govee_h5074(manufacturer_data, base_topic):
 	"""Parse H5074 data."""
 	data = []
-	print("  Raw manufacturer data: %s" % manufacturer_data.hex())  # Debug line
 	
 	if len(manufacturer_data) >= 15:  # Adjust length check for the new format
 		try:
