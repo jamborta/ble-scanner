@@ -60,7 +60,7 @@ class ScanDelegate(DefaultDelegate):
 
 	def handleDiscovery(self, dev, isNewDev, isNewData):
 		if isNewDev:
-			print("Discovered device", dev.addr)
+			pass
 		elif isNewData:
 			print("Received new data from", dev.addr)
 
