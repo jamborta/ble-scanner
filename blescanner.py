@@ -39,28 +39,43 @@ def parse_govee_h5074(manufacturer_data, base_topic):
 	data = []
 	print("  Raw manufacturer data: %s" % manufacturer_data.hex())
 	
-	# Check if data starts with 88ec (Govee's manufacturer ID)
-	if manufacturer_data.hex().startswith('88ec'):
+	if manufacturer_data.hex().startswith('88ec'):  # New format
 		try:
-			# For the format 88ec001e0954145d02
-			# Temperature is bytes 6-7 (0954 in your example)
-			# Humidity is byte 8 (14 in your example)
-			
+			# Temperature is bytes 6-7
 			temp_raw = int.from_bytes(manufacturer_data[6:8], byteorder='little', signed=True)
-			temp = temp_raw / 100  # Scale factor for this format
+			temp = temp_raw / 100
 			
+			# Humidity is byte 8
 			humidity = manufacturer_data[8]
 			
-			print("  Converted values - temp: {}°C, humidity: {}%".format(temp, humidity))
+			print("  Converted values (new format) - temp: {}°C, humidity: {}%".format(temp, humidity))
 			
-			# Only append valid readings (filter out obviously wrong values)
-			if -50 <= temp <= 50:  # reasonable temperature range
+			if -50 <= temp <= 50:
 				data.append({"topic": base_topic + "temperature", "payload": round(temp, 2)})
-			if 0 <= humidity <= 100:  # valid humidity range
+			if 0 <= humidity <= 100:
 				data.append({"topic": base_topic + "humidity", "payload": round(humidity, 2)})
-			
+				
 		except Exception as e:
 			print("  Error parsing data: %s" % str(e))
+	
+	elif len(manufacturer_data) >= 15:  # Old format
+		try:
+			temp_raw = int.from_bytes(manufacturer_data[12:14], byteorder='little', signed=True)
+			temp = temp_raw / 1000
+			
+			humidity = manufacturer_data[14]
+			battery = manufacturer_data[15] if len(manufacturer_data) > 15 else 0
+			
+			print("  Converted values (old format) - temp: {}°C, humidity: {}%, battery: {}%".format(
+				temp, humidity, battery))
+			
+			if -50 <= temp <= 50:
+				data.append({"topic": base_topic + "temperature", "payload": round(temp, 2)})
+			if 0 <= humidity <= 100:
+				data.append({"topic": base_topic + "humidity", "payload": round(humidity, 2)})
+			if 0 <= battery <= 100:
+				data.append({"topic": base_topic + "battery", "payload": battery})
+	
 	return data
 
 class ScanDelegate(DefaultDelegate):
